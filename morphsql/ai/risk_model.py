@@ -71,6 +71,7 @@ def _synthetic_corpus() -> tuple[list[str], list[str]]:
 
 
 def train_and_save(model_dir: Path | None = None, *, force: bool = False) -> Path:
+    global _risk_singleton
     model_dir = Path(model_dir or MODEL_DIR)
     model_dir.mkdir(parents=True, exist_ok=True)
     out = model_dir / "risk_classifier.joblib"
@@ -133,7 +134,21 @@ def train_and_save(model_dir: Path | None = None, *, force: bool = False) -> Pat
         ),
         encoding="utf-8",
     )
+    _risk_singleton = None
     return model_dir / "risk_classifier.joblib"
+
+
+def _load_compatible_model(path: Path):
+    """Load the classifier, retraining when sklearn pickle versions disagree."""
+    if not path.exists():
+        train_and_save(path.parent)
+    try:
+        model = joblib.load(path)
+        model.predict_proba(["SELECT 1"])
+        return model
+    except Exception:
+        train_and_save(path.parent, force=True)
+        return joblib.load(path)
 
 
 class MigrationRiskModel:
@@ -141,9 +156,7 @@ class MigrationRiskModel:
 
     def __init__(self, model_path: Path | None = None):
         path = Path(model_path or MODEL_PATH)
-        if not path.exists():
-            train_and_save(path.parent)
-        self.model = joblib.load(path)
+        self.model = _load_compatible_model(path)
         self.labels = LABELS
 
     def predict(self, sql: str) -> dict:
