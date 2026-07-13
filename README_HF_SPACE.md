@@ -22,7 +22,7 @@ tags:
   - dbt
   - data-engineering
 models:
-  - dgvj-work/sqlshift-ai
+  - dgvj-work/morphsql
 datasets:
   - dgvj-work/vertica-snowflake-pairs
 suggested_hardware: cpu-basic
@@ -30,10 +30,9 @@ suggested_hardware: cpu-basic
 
 # MorphSQL
 
-**Public product name: MorphSQL** (Hugging Face Space title).  
-Technical slug: `dgvj-work/sqlshift-ai` · Python import: `sqlshift`
-
 Convert warehouse SQL → **pandas**, **PySpark**, Snowflake, BigQuery, or **dbt** — then **download** the result.
+
+Package / CLI / Hub: `morphsql` · Space: [dgvj-work/morphsql](https://huggingface.co/spaces/dgvj-work/morphsql)
 
 ## How to use (30 seconds)
 
@@ -52,7 +51,7 @@ Convert warehouse SQL → **pandas**, **PySpark**, Snowflake, BigQuery, or **dbt
 ## Python API
 
 ```python
-from sqlshift.ai import pipeline
+from morphsql.ai import pipeline
 
 out = pipeline("sql-migration")(
     "SELECT COALESCE(a, 0) FROM t",
@@ -66,4 +65,4 @@ print(out["converted_sql"][:500])
 
 Object risk assess · repo workbench · ML feature SQL · copilot · dialect notes · offline eval
 
-Author: Digvijay Waghela · Apache-2.0 · [GitHub](https://github.com/dgvj-work/sql_shift_ai)
+Author: Digvijay Waghela · Apache-2.0 · [GitHub](https://github.com/dgvj-work/morphsql)

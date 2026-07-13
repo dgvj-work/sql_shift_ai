@@ -29,12 +29,12 @@ pytest tests/ -v --tb=short
 # 4. Run CLI smoke test
 echo ""
 echo "🔍 Running CLI analyze on example repo..."
-sqlshift analyze examples/vertica_legacy --source vertica --target snowflake --output ./migration-output
+morphsql analyze examples/vertica_legacy --source vertica --target snowflake --output ./migration-output
 
 # 5. Run full migration pipeline
 echo ""
 echo "🚀 Running full migration pipeline..."
-sqlshift migrate examples/vertica_legacy --source vertica --target snowflake --output ./migration-output
+morphsql migrate examples/vertica_legacy --source vertica --target snowflake --output ./migration-output
 
 # 6. Verify outputs
 echo ""
@@ -88,9 +88,9 @@ echo "  1. Launch the Gradio demo:"
 echo "     python app.py"
 echo ""
 echo "  2. Or use the CLI:"
-echo "     sqlshift analyze examples/vertica_legacy --source vertica --target snowflake"
-echo "     sqlshift convert examples/vertica_legacy --source vertica --target dbt-snowflake --generate-dbt"
-echo "     sqlshift migrate examples/vertica_legacy --output migration-output"
+echo "     morphsql analyze examples/vertica_legacy --source vertica --target snowflake"
+echo "     morphsql convert examples/vertica_legacy --source vertica --target dbt-snowflake --generate-dbt"
+echo "     morphsql migrate examples/vertica_legacy --output migration-output"
 echo ""
 echo "  3. Open the HTML report:"
 echo "     open migration-output/migration_report.html"

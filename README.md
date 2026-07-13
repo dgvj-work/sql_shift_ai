@@ -2,27 +2,24 @@
 
 Convert Vertica / Oracle / Redshift / BigQuery / Snowflake SQL to **pandas** or **PySpark** (notebook-ready), **Snowflake**, **BigQuery**, or **dbt**.
 
-[![Space](https://img.shields.io/badge/🤗%20Space-MorphSQL-blue)](https://huggingface.co/spaces/dgvj-work/sqlshift-ai)
-[![GitHub](https://img.shields.io/badge/GitHub-dgvj--work%2Fsql__shift__ai-blue)](https://github.com/dgvj-work/sql_shift_ai)
+[![Space](https://img.shields.io/badge/🤗%20Space-MorphSQL-blue)](https://huggingface.co/spaces/dgvj-work/morphsql)
+[![GitHub](https://img.shields.io/badge/GitHub-dgvj--work%2Fmorphsql-blue)](https://github.com/dgvj-work/morphsql)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://python.org)
 
 Built for data scientists: upload or paste SQL → convert → sample preview → download `.py` / `.sql`.
 
-## Naming (one product)
+## Naming
 
 | Layer | Name |
 |-------|------|
-| **Product / Hugging Face Space title** | **MorphSQL** |
-| Python import | `sqlshift` |
-| PyPI package | `sqlshift-ai` |
-| GitHub repo | `sql_shift_ai` |
-| HF Space / model URL slug | `dgvj-work/sqlshift-ai` |
-
-Use **MorphSQL** in the UI, docs, and on Hugging Face. Technical IDs (`sqlshift` / `sql_shift_ai`) stay for imports and repo URLs only.
+| **Product** | **MorphSQL** |
+| Python import / CLI / PyPI | `morphsql` |
+| Hugging Face Space / model | `dgvj-work/morphsql` |
+| GitHub | `dgvj-work/morphsql` (rename from `sql_shift_ai` if still pending) |
 
 ```python
-from sqlshift.ai import pipeline
+from morphsql.ai import pipeline
 print(pipeline("sql-migration")("SELECT COALESCE(a, 0) FROM t", source="snowflake", target="pandas"))
 print(pipeline("sql-migration")("SELECT COALESCE(a, 0) FROM t", source="snowflake", target="pyspark"))
 ```
@@ -49,8 +46,8 @@ print(pipeline("sql-migration")("SELECT COALESCE(a, 0) FROM t", source="snowflak
 ## Quick start
 
 ```bash
-git clone https://github.com/dgvj-work/sql_shift_ai.git
-cd sql_shift_ai
+git clone https://github.com/dgvj-work/morphsql.git
+cd morphsql
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev,demo]"
 
@@ -65,18 +62,18 @@ python app.py
 
 ```bash
 # Analyze repository
-sqlshift analyze ./examples/vertica_legacy --source vertica --target snowflake -o report/
+morphsql analyze ./examples/vertica_legacy --source vertica --target snowflake -o report/
 
 # Full migration pipeline
-sqlshift migrate ./examples/vertica_legacy --output migration-output/
+morphsql migrate ./examples/vertica_legacy --output migration-output/
 ```
 
 ### Python SDK
 
 ```python
-from sqlshift.pipeline import MigrationPipeline
-from sqlshift.models import Dialect
-from sqlshift.intelligence.runbook import generate_runbook
+from morphsql.pipeline import MigrationPipeline
+from morphsql.models import Dialect
+from morphsql.intelligence.runbook import generate_runbook
 
 pipeline = MigrationPipeline(source=Dialect.VERTICA, target=Dialect.SNOWFLAKE)
 report = pipeline.analyze("./examples/vertica_legacy")
@@ -124,12 +121,16 @@ pip install -U "huggingface_hub[cli]"
 hf auth login
 
 # create the Space once in the UI (Gradio SDK) or:
-#   hf repo create sqlshift-ai --type space --space_sdk gradio --organization dgvj-work
+#   hf repo create morphsql --type space --space_sdk gradio --organization dgvj-work
 
 # deploy Space + model + dataset
 ./scripts/deploy_hf.sh
-# → https://huggingface.co/spaces/dgvj-work/sqlshift-ai
+# → https://huggingface.co/spaces/dgvj-work/morphsql
 ```
+
+**One-time Hub setup (if not done yet)**
+1. GitHub: Settings → General → Repository name → rename `sql_shift_ai` → `morphsql`
+2. Hugging Face: create Gradio Space + model repos named `morphsql` under `dgvj-work`, then run `./scripts/deploy_hf.sh`
 
 Preflight only (no upload):
 
@@ -145,7 +146,7 @@ Set `HF_TOKEN` in Space secrets (automatic on HF). Optional: `MORPHSQL_MODEL` to
 ## Project structure
 
 ```
-sqlshift/           Core package
+morphsql/           Core package
 demo/               Gradio handlers + theme
 app.py              Hugging Face Space entry
 examples/           Sample Vertica legacy repo

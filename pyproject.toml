@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sqlshift-ai"
+name = "morphsql"
 version = "0.4.0"
 description = "MorphSQL: convert warehouse SQL to pandas, PySpark, Snowflake, BigQuery, or dbt"
 readme = "README.md"
@@ -13,8 +13,8 @@ authors = [
     { name = "Digvijay Waghela", email = "digvijay.vaghela@yahoo.com" }
 ]
 keywords = [
-    "sql", "migration", "vertica", "snowflake", "dbt", "pandas",
-    "data-engineering", "lineage", "data-warehouse", "etl",
+    "morphsql", "sql", "migration", "vertica", "snowflake", "dbt", "pandas",
+    "pyspark", "data-engineering", "lineage", "data-warehouse", "etl",
     "huggingface", "llm", "sqlglot", "agent", "rag",
     "machine-learning", "feature-engineering", "evaluation",
 ]
@@ -62,16 +62,16 @@ dev = [
 ]
 
 [project.scripts]
-sqlshift = "sqlshift.cli:app"
+morphsql = "morphsql.cli:app"
 
 [project.urls]
-Homepage = "https://huggingface.co/spaces/dgvj-work/sqlshift-ai"
-Repository = "https://github.com/dgvj-work/sql_shift_ai"
-Documentation = "https://huggingface.co/spaces/dgvj-work/sqlshift-ai"
-"Bug Tracker" = "https://github.com/dgvj-work/sql_shift_ai/issues"
+Homepage = "https://huggingface.co/spaces/dgvj-work/morphsql"
+Repository = "https://github.com/dgvj-work/morphsql"
+Documentation = "https://huggingface.co/spaces/dgvj-work/morphsql"
+"Bug Tracker" = "https://github.com/dgvj-work/morphsql/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["sqlshift"]
+packages = ["morphsql"]
 
 [tool.ruff]
 line-length = 100

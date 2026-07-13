@@ -10,17 +10,17 @@ from pathlib import Path
 
 import plotly.graph_objects as go
 
-from sqlshift.assistant.copilot import MigrationCopilot
-from sqlshift.dbt_generator.decomposer import decompose_to_dbt, format_dbt_project, is_dbt_target
-from sqlshift.intelligence.lineage_viz import lineage_to_plotly
-from sqlshift.intelligence.rationalization import generate_rationalization
-from sqlshift.intelligence.runbook import generate_executive_summary, generate_runbook
-from sqlshift.lineage.builder import build_lineage_graph
-from sqlshift.models import Dialect, MigrationObject, MigrationReport, ObjectType
-from sqlshift.pipeline import MigrationPipeline
-from sqlshift.translator.engine import translate_sql
-from sqlshift.translator.pandas_codegen import is_pandas_target
-from sqlshift.translator.pyspark_codegen import is_pyspark_target
+from morphsql.assistant.copilot import MigrationCopilot
+from morphsql.dbt_generator.decomposer import decompose_to_dbt, format_dbt_project, is_dbt_target
+from morphsql.intelligence.lineage_viz import lineage_to_plotly
+from morphsql.intelligence.rationalization import generate_rationalization
+from morphsql.intelligence.runbook import generate_executive_summary, generate_runbook
+from morphsql.lineage.builder import build_lineage_graph
+from morphsql.models import Dialect, MigrationObject, MigrationReport, ObjectType
+from morphsql.pipeline import MigrationPipeline
+from morphsql.translator.engine import translate_sql
+from morphsql.translator.pandas_codegen import is_pandas_target
+from morphsql.translator.pyspark_codegen import is_pyspark_target
 from demo.theme import C_MUTED, C_PANEL, C_TEXT
 
 EXAMPLES_DIR = Path(__file__).parent.parent / "examples" / "vertica_legacy"
@@ -355,9 +355,9 @@ def analyze_sql_object(sql: str, source: str, target: str) -> tuple[str, go.Figu
         )
 
     try:
-        from sqlshift.parser.sql_parser import count_sql_complexity, detect_unsupported_features
-        from sqlshift.risk.scorer import extract_business_rules, score_object
-        from sqlshift.validation.reconciliation import generate_incremental_strategy
+        from morphsql.parser.sql_parser import count_sql_complexity, detect_unsupported_features
+        from morphsql.risk.scorer import extract_business_rules, score_object
+        from morphsql.validation.reconciliation import generate_incremental_strategy
 
         source_d = Dialect(source)
         wants_dbt = is_dbt_target(target)
@@ -552,7 +552,7 @@ TARGET_DROPDOWN = [
 
 def run_hero_agent(sql: str, source: str, target: str) -> tuple[str, str, str, str]:
     """Convert SQL and return (notes_md, output, status, share_md)."""
-    from sqlshift.risk.scorer import score_object
+    from morphsql.risk.scorer import score_object
 
     sql = sql or HERO_EXAMPLE
     source_d = Dialect(source)
@@ -658,12 +658,12 @@ def run_hero_agent(sql: str, source: str, target: str) -> tuple[str, str, str, s
         notes.append("")
 
     status = f"{conf:.0f}% · {kind}"
-    space_url = "https://huggingface.co/spaces/dgvj-work/sqlshift-ai"
+    space_url = "https://huggingface.co/spaces/dgvj-work/morphsql"
     share = (
         f"MorphSQL converted **{source_label} → {target_label}** "
         f"({conf:.0f}% confidence).\n\n"
         f"[Open Space]({space_url}) · "
-        f"[GitHub](https://github.com/dgvj-work/sql_shift_ai)"
+        f"[GitHub](https://github.com/dgvj-work/morphsql)"
     )
     return "\n".join(notes), output, status, share
 
@@ -802,7 +802,7 @@ def _preview_code_for_target(output: str, target: str, sql: str, source: str) ->
     Pandas targets execute the generated code. All other targets reuse the same
     source SQL → pandas path so preview works without Spark / a warehouse.
     """
-    from sqlshift.translator.pandas_codegen import sql_to_pandas
+    from morphsql.translator.pandas_codegen import sql_to_pandas
 
     code = output or ""
     if is_pandas_target(target) and "import pandas" in code:
@@ -1018,8 +1018,8 @@ def convert_upload_for_ui(upload_file, sql: str, source: str, target: str):
     share = (
         f"Converted **{len(converted_paths)}** file(s) to `{target}`. "
         f"Download the zip and drop files into your notebook / warehouse / dbt project.\n\n"
-        f"[Space](https://huggingface.co/spaces/dgvj-work/sqlshift-ai) · "
-        f"[GitHub](https://github.com/dgvj-work/sql_shift_ai)"
+        f"[Space](https://huggingface.co/spaces/dgvj-work/morphsql) · "
+        f"[GitHub](https://github.com/dgvj-work/morphsql)"
     )
     nb = notebook_cell(first_output, target)
     api = hf_pipeline_snippet(first_sql or HERO_EXAMPLE, source, target)
@@ -1077,7 +1077,7 @@ def hf_pipeline_snippet(sql: str, source: str, target: str) -> str:
     if len(sql_short) > 180:
         sql_short = sql_short[:177] + "..."
     return (
-        "from sqlshift.ai import pipeline\n\n"
+        "from morphsql.ai import pipeline\n\n"
         "# Same API style as transformers.pipeline\n"
         'pipe = pipeline("sql-migration")\n'
         "out = pipe(\n"
@@ -1225,8 +1225,8 @@ def load_agent_example(index: int) -> tuple[str, str, str, str]:
 
 def run_eval_suite(limit: int, category: str) -> tuple[str, str, dict]:
     """Run eval suite and return markdown summary, detail table, metrics dict."""
-    from sqlshift.eval.metrics import run_eval
-    from sqlshift.eval.pairs import ensure_pairs_file
+    from morphsql.eval.metrics import run_eval
+    from morphsql.eval.pairs import ensure_pairs_file
 
     ensure_pairs_file()
     cats = None if category in ("all", "", None) else [category]
@@ -1270,7 +1270,7 @@ def run_eval_suite(limit: int, category: str) -> tuple[str, str, dict]:
 
 
 def submit_eval_score(name: str, summary: dict | None) -> str:
-    from sqlshift.eval.leaderboard import format_leaderboard_md, submit_score
+    from morphsql.eval.leaderboard import format_leaderboard_md, submit_score
 
     if not summary or not summary.get("n_pairs"):
         return format_leaderboard_md() + "\n\n_Run the eval suite before submitting._"
@@ -1287,7 +1287,7 @@ def submit_eval_score(name: str, summary: dict | None) -> str:
 
 
 def run_behavior_rag(query: str, source: str, target: str) -> str:
-    from sqlshift.intelligence.rag import get_rag
+    from morphsql.intelligence.rag import get_rag
 
     return get_rag().answer(query or "NULL empty string timezone", source, target)
 
@@ -1370,7 +1370,7 @@ def run_workbench_ui(upload_file, use_sample: bool, source: str, target: str) ->
 
 
 def get_leaderboard_md() -> str:
-    from sqlshift.eval.leaderboard import format_leaderboard_md
+    from morphsql.eval.leaderboard import format_leaderboard_md
 
     return format_leaderboard_md()
 

@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from sqlshift.eval.pairs import ensure_pairs_file, load_pairs
+from morphsql.eval.pairs import ensure_pairs_file, load_pairs
 
 
 def main() -> None:
@@ -67,8 +67,8 @@ Synthetic + curated migration pairs for **MorphSQL** evals and fine-tuning.
 - Fields: `id`, `category`, `source_dialect`, `target_dialect`, `source_sql`, `target_sql`, `notes`
 - Categories: function, date, aggregate, ddl, ml_feature
 
-Space: https://huggingface.co/spaces/dgvj-work/sqlshift-ai  
-Code: https://github.com/dgvj-work/sql_shift_ai  
+Space: https://huggingface.co/spaces/dgvj-work/morphsql  
+Code: https://github.com/dgvj-work/morphsql  
 Author: Digvijay Waghela
 """
     api.upload_file(

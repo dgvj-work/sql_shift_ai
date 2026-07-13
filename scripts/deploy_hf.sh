@@ -7,11 +7,11 @@
 #
 # Usage:
 #   ./scripts/deploy_hf.sh
-#   ./scripts/deploy_hf.sh dgvj-work/sqlshift-ai
+#   ./scripts/deploy_hf.sh dgvj-work/morphsql
 set -euo pipefail
 
-SPACE_ID="${1:-dgvj-work/sqlshift-ai}"
-MODEL_ID="${2:-dgvj-work/sqlshift-ai}"
+SPACE_ID="${1:-dgvj-work/morphsql}"
+MODEL_ID="${2:-dgvj-work/morphsql}"
 DATASET_ID="${3:-dgvj-work/vertica-snowflake-pairs}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -36,8 +36,8 @@ echo "Preflight: Space import + convert smoke…"
 python scripts/check_space.py
 
 echo "Ensuring eval pairs + risk model artifacts…"
-python -c "from sqlshift.eval.pairs import ensure_pairs_file; print(ensure_pairs_file())"
-python -c "from pathlib import Path; from sqlshift.ai.risk_model import MODEL_PATH, train_and_save; train_and_save() if not Path(MODEL_PATH).exists() else print(MODEL_PATH)"
+python -c "from morphsql.eval.pairs import ensure_pairs_file; print(ensure_pairs_file())"
+python -c "from pathlib import Path; from morphsql.ai.risk_model import MODEL_PATH, train_and_save; train_and_save() if not Path(MODEL_PATH).exists() else print(MODEL_PATH)"
 
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT

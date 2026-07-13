@@ -19,7 +19,7 @@ def main() -> int:
         "README_HF_SPACE.md",
         "demo/handlers.py",
         "demo/theme.py",
-        "sqlshift/__init__.py",
+        "morphsql/__init__.py",
         "model/risk_classifier.joblib",
         "examples/vertica_legacy",
     ):

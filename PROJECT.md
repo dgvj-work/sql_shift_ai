@@ -7,16 +7,16 @@
 | Layer | Name |
 |-------|------|
 | **Product (UI, docs, Hugging Face Space title)** | **MorphSQL** |
-| Python import | `sqlshift` |
-| PyPI package | `sqlshift-ai` |
-| GitHub repo | `sql_shift_ai` |
-| HF Space / model slug | `dgvj-work/sqlshift-ai` |
+| Python import | `morphsql` |
+| PyPI package | `morphsql` |
+| GitHub repo | `morphsql` |
+| HF Space / model slug | `dgvj-work/morphsql` |
 
-Always use **MorphSQL** as the public product name. Do not invent alternate brands (SQLShiftAI, etc.) in UI copy.
+Always use **MorphSQL** / `morphsql` consistently (product, package, CLI, Hub).
 
 ## What this project is
 
-**MorphSQL** is an open-source **SQL migration toolkit** (package import: `sqlshift`).
+**MorphSQL** is an open-source **SQL migration toolkit** (package import: `morphsql`).
 
 It is **not** only a single-query converter. It analyzes legacy SQL repositories and produces:
 
@@ -33,12 +33,12 @@ It is **not** only a single-query converter. It analyzes legacy SQL repositories
 ## Repository layout
 
 ```
-sql_shift_ai/
+morphsql/
 ├── app.py                    # Hugging Face Gradio Space (MorphSQL UI)
 ├── demo/
 │   ├── handlers.py           # Gradio event handlers
 │   └── theme.py              # Dark theme CSS/constants
-├── sqlshift/                 # Core Python package
+├── morphsql/                 # Core Python package
 │   ├── scanner/              # Repository discovery
 │   ├── parser/               # SQL parsing (sqlglot)
 │   ├── lineage/              # Dependency graphs (networkx)
@@ -52,7 +52,7 @@ sql_shift_ai/
 │   ├── report/               # HTML report generation
 │   ├── pipeline.py           # Agent orchestration
 │   ├── models.py             # Pydantic data models
-│   └── cli.py                # `sqlshift` CLI
+│   └── cli.py                # `morphsql` CLI
 ├── examples/vertica_legacy/  # Sample legacy Vertica repository
 ├── tests/
 ├── PROJECT.md                # This file
@@ -83,30 +83,30 @@ MigrationCopilot.respond()      → LLM Q&A grounded in report
 
 | Module | File | Purpose |
 |--------|------|---------|
-| Pipeline | `sqlshift/pipeline.py` | Orchestrates full workflow |
-| Translator | `sqlshift/translator/engine.py` | ZEROIFNULL, DATEADD, procedure wrappers, sqlglot |
-| Pandas / PySpark | `sqlshift/translator/*_codegen.py` | Notebook / Spark DataFrame codegen |
-| Copilot | `sqlshift/assistant/copilot.py` | HF Inference API + fallback KB |
-| Runbook | `sqlshift/intelligence/runbook.py` | Migration runbook markdown |
-| Lineage viz | `sqlshift/intelligence/lineage_viz.py` | Plotly network graph |
-| Rationalization | `sqlshift/intelligence/rationalization.py` | Workload action plan |
+| Pipeline | `morphsql/pipeline.py` | Orchestrates full workflow |
+| Translator | `morphsql/translator/engine.py` | ZEROIFNULL, DATEADD, procedure wrappers, sqlglot |
+| Pandas / PySpark | `morphsql/translator/*_codegen.py` | Notebook / Spark DataFrame codegen |
+| Copilot | `morphsql/assistant/copilot.py` | HF Inference API + fallback KB |
+| Runbook | `morphsql/intelligence/runbook.py` | Migration runbook markdown |
+| Lineage viz | `morphsql/intelligence/lineage_viz.py` | Plotly network graph |
+| Rationalization | `morphsql/intelligence/rationalization.py` | Workload action plan |
 
 ## CLI commands
 
 ```bash
-sqlshift analyze PATH -s vertica -t snowflake
-sqlshift convert PATH -s snowflake -t pandas
-sqlshift migrate PATH -s vertica -t snowflake -o migration-output
-sqlshift version
+morphsql analyze PATH -s vertica -t snowflake
+morphsql convert PATH -s snowflake -t pandas
+morphsql migrate PATH -s vertica -t snowflake -o migration-output
+morphsql version
 ```
 
 ## Hugging Face
 
 - Space title: **MorphSQL**
-- Space URL: https://huggingface.co/spaces/dgvj-work/sqlshift-ai
+- Space URL: https://huggingface.co/spaces/dgvj-work/morphsql
 - Deploy: `./scripts/deploy_hf.sh`
 - Preflight: `python scripts/check_space.py`
-- Copilot model env: `MORPHSQL_MODEL` (fallback: `SQLSHIFTAI_MODEL`)
+- Copilot model env: `MORPHSQL_MODEL`
 
 ## Gradio UI tabs
 

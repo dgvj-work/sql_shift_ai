@@ -6,9 +6,9 @@ import inspect
 
 import gradio as gr
 
-from sqlshift import __product_name__, __version__
-from sqlshift.ai.risk_model import train_and_save
-from sqlshift.eval.pairs import ensure_pairs_file
+from morphsql import __product_name__, __version__
+from morphsql.ai.risk_model import train_and_save
+from morphsql.eval.pairs import ensure_pairs_file
 from demo.handlers import (
     HERO_EXAMPLE,
     PLAYGROUND_EXAMPLE_LABELS,
@@ -29,8 +29,8 @@ from demo.handlers import (
 )
 from demo.theme import CUSTOM_CSS, build_theme
 
-SPACE_URL = "https://huggingface.co/spaces/dgvj-work/sqlshift-ai"
-GITHUB_URL = "https://github.com/dgvj-work/sql_shift_ai"
+SPACE_URL = "https://huggingface.co/spaces/dgvj-work/morphsql"
+GITHUB_URL = "https://github.com/dgvj-work/morphsql"
 
 # Soft-fail boot so the Space still loads if artifacts are regenerating
 try:
@@ -54,7 +54,7 @@ except Exception as exc:  # pragma: no cover
         None,
         None,
         "# Convert SQL to get a notebook cell",
-        'from sqlshift.ai import pipeline\nprint(pipeline("sql-migration")("SELECT 1", source="snowflake", target="pandas"))\n',
+        'from morphsql.ai import pipeline\nprint(pipeline("sql-migration")("SELECT 1", source="snowflake", target="pandas"))\n',
     )
 
 
@@ -295,7 +295,7 @@ into pandas or PySpark you can run in Jupyter / Colab / Databricks.
 | **Behavior notes / Eval** | Dialect quirks lookup and offline conversion scoring |
 
 ```python
-from sqlshift.ai import pipeline
+from morphsql.ai import pipeline
 out = pipeline("sql-migration")(sql, source="snowflake", target="pandas")
 # or target="pyspark"
 # out["converted_sql"] → exec / save as features.py
