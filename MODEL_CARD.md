@@ -18,15 +18,15 @@ library_name: sqlshift-ai
 pipeline_tag: text-generation
 ---
 
-# MigrationIQ / SQLShift AI
+# SQLShiftAI
 
 ## Model Card
 
 ### Model Description
 
-**MigrationIQ** (open-source core: **SQLShift AI**) is an AI-powered data platform migration intelligence toolkit. It analyzes legacy SQL repositories, stored procedures, and ETL workflows to automate cloud data warehouse modernization.
+**SQLShiftAI** is an AI-powered data platform migration intelligence toolkit. It analyzes legacy SQL repositories, stored procedures, and ETL workflows to automate cloud data warehouse modernization.
 
-Unlike simple SQL translators, MigrationIQ provides:
+Unlike simple SQL translators, SQLShiftAI provides:
 
 - **Repository-level discovery** — scan entire codebases, not single queries
 - **Column-level lineage** — dependency graphs before and after conversion
@@ -84,7 +84,7 @@ print(f"Objects: {report.dashboard.total_objects}, Risk: {report.dashboard.migra
 
 ### Training Data
 
-SQLShift AI uses a hybrid architecture, not a fine-tuned LLM:
+SQLShiftAI uses a hybrid architecture, not a fine-tuned LLM:
 
 1. **sqlglot** — battle-tested SQL parser and dialect transpiler
 2. **Deterministic rules** — Vertica/Oracle function mappings, syntax replacements
@@ -116,9 +116,9 @@ Tested against bundled Vertica legacy repository (procedures, views, tables, que
 ### Citation
 
 ```bibtex
-@software{migrationiq2026,
-  title={MigrationIQ: AI Data Platform Migration Intelligence},
-  author={MigrationIQ Contributors},
+@software{sqlshiftai2026,
+  title={SQLShiftAI: AI Data Platform Migration Intelligence},
+  author={SQLShiftAI Contributors},
   year={2026},
   url={https://huggingface.co/migrationiq/sqlshift-ai}
 }

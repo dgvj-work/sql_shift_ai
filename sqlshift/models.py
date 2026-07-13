@@ -1,4 +1,4 @@
-"""Core data models for MigrationIQ."""
+"""Core data models for SQLShiftAI."""
 
 from __future__ import annotations
 

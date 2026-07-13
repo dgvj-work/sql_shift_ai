@@ -1,10 +1,10 @@
-# MigrationIQ — Project Context Document
+# SQLShiftAI — Project Context Document
 
 > **Purpose:** Give this file to any AI assistant or new developer to continue work without prior conversation context.
 
 ## What this project is
 
-**MigrationIQ** (PyPI: `sqlshift-ai`, repo: `sql_shift_ai`) is an open-source **data platform migration intelligence system**.
+**SQLShiftAI** (PyPI: `sqlshift-ai`, repo: `sql_shift_ai`) is an open-source **data platform migration intelligence system**.
 
 It is **not** a simple SQL query converter. It analyzes entire legacy data platform repositories and produces:
 
@@ -93,7 +93,7 @@ pytest tests/ -v
 
 - **Entry:** `app.py`
 - **Config:** `README_HF_SPACE.md`
-- **Model for copilot:** `Qwen/Qwen2.5-3B-Instruct` (env: `MIGRATIONIQ_MODEL`)
+- **Model for copilot:** `Qwen/Qwen2.5-3B-Instruct` (env: `SQLSHIFTAI_MODEL`)
 - **Token:** `HF_TOKEN` (auto-set on HF Spaces)
 - **Deploy:** `bash scripts/deploy_hf.sh`
 

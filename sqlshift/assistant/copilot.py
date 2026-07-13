@@ -10,11 +10,11 @@ from sqlshift.models import MigrationReport
 from sqlshift.risk.scorer import recommend_workload_action
 
 DEFAULT_MODEL = os.getenv(
-    "MIGRATIONIQ_MODEL",
-    "Qwen/Qwen2.5-3B-Instruct",
+    "SQLSHIFTAI_MODEL",
+    os.getenv("MIGRATIONIQ_MODEL", "Qwen/Qwen2.5-3B-Instruct"),
 )
 
-SYSTEM_PROMPT = """You are MigrationIQ Copilot, an expert data platform migration advisor.
+SYSTEM_PROMPT = """You are SQLShiftAI Copilot, an expert data platform migration advisor.
 
 You help data engineers plan warehouse migrations (Vertica, Oracle, Redshift → Snowflake, dbt, BigQuery).
 

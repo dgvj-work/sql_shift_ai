@@ -1,4 +1,4 @@
-"""Tests for MigrationIQ."""
+"""Tests for SQLShiftAI."""
 
 import pytest
 from pathlib import Path

@@ -1,4 +1,4 @@
-# MigrationIQ
+# SQLShiftAI
 
 **Data platform migration intelligence** — discover, assess, translate, validate, and plan enterprise warehouse migrations.
 
@@ -12,7 +12,7 @@
 
 ## What makes this different from SQL converters
 
-| Capability | SQL converters | MigrationIQ |
+| Capability | SQL converters | SQLShiftAI |
 |-----------|----------------|-------------|
 | Single query translation | Yes | Yes |
 | **Repository-level discovery** | No | Yes |
@@ -104,7 +104,7 @@ huggingface-cli repo create sql_shift_ai --type space --space_sdk gradio
 bash scripts/deploy_hf.sh dgvj-work/sql_shift_ai
 ```
 
-Set `HF_TOKEN` in Space secrets (automatic on HF). Optional: `MIGRATIONIQ_MODEL` to change copilot model.
+Set `HF_TOKEN` in Space secrets (automatic on HF). Optional: `SQLSHIFTAI_MODEL` to change copilot model.
 
 ---
 

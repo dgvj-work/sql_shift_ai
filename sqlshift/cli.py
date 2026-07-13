@@ -1,4 +1,4 @@
-"""MigrationIQ CLI — sqlshift command-line interface."""
+"""SQLShiftAI CLI — sqlshift command-line interface."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def _to_dialect(d: SourceDialect | TargetDialect) -> Dialect:
 
 @app.callback()
 def main():
-    """MigrationIQ / SQLShift AI — migration intelligence toolkit."""
+    """SQLShiftAI — migration intelligence toolkit."""
     pass
 
 
@@ -188,7 +188,7 @@ def migrate_cmd(
 @app.command()
 def version():
     """Show version information."""
-    console.print(f"{__product_name__} / SQLShift AI v{__version__}")
+    console.print(f"{__product_name__} v{__version__}")
 
 
 def _print_dashboard(report) -> None:

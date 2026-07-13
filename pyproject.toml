@@ -61,7 +61,7 @@ sqlshift = "sqlshift.cli:app"
 Homepage = "https://huggingface.co/spaces/migrationiq/sqlshift-ai"
 Repository = "https://github.com/dgvj-work/sql_shift_ai"
 Documentation = "https://huggingface.co/spaces/migrationiq/sqlshift-ai"
-"Bug Tracker" = "https://github.com/migrationiq/sqlshift-ai/issues"
+"Bug Tracker" = "https://github.com/dgvj-work/sql_shift_ai/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["sqlshift"]

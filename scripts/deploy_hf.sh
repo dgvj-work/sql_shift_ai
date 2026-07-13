@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Deploy MigrationIQ to Hugging Face Hub
+# Deploy SQLShiftAI to Hugging Face Hub
 set -euo pipefail
 
 SPACE_ID="${1:-migrationiq/sqlshift-ai}"
 MODEL_ID="${2:-migrationiq/sqlshift-ai}"
 
-echo "🔄 Deploying MigrationIQ to Hugging Face..."
+echo "🔄 Deploying SQLShiftAI to Hugging Face..."
 echo ""
 
 # Deploy Gradio Space

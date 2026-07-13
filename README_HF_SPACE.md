@@ -1,5 +1,5 @@
 ---
-title: MigrationIQ
+title: SQLShiftAI
 emoji: chart_with_upwards_trend
 colorFrom: gray
 colorTo: blue
@@ -21,6 +21,6 @@ tags:
   - agents
 ---
 
-# MigrationIQ
+# SQLShiftAI
 
 Full-stack data platform migration intelligence: discovery, lineage, assessment, architecture, validation, and LLM copilot.

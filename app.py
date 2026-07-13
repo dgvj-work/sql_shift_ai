@@ -1,4 +1,4 @@
-"""MigrationIQ — Hugging Face Space: full migration intelligence workbench."""
+"""SQLShiftAI — Hugging Face Space: full migration intelligence workbench."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ _SAMPLE_INSPECTOR = analyze_sql_object(EXAMPLE_SQL, "vertica", "snowflake")
 
 
 def _build_demo() -> gr.Blocks:
-    with gr.Blocks(title="MigrationIQ") as demo:
+    with gr.Blocks(title="SQLShiftAI") as demo:
         report_state = gr.State(value=_SAMPLE[11])
 
         gr.HTML(
@@ -254,9 +254,9 @@ def _build_demo() -> gr.Blocks:
             with gr.Tab("Reference"):
                 gr.Markdown(
                     """
-### What MigrationIQ does
+### What SQLShiftAI does
 
-MigrationIQ is a **data platform migration intelligence system** — not a simple SQL converter.
+SQLShiftAI is a **data platform migration intelligence system** — not a simple SQL converter.
 
 | Capability | Description |
 |------------|-------------|
@@ -283,7 +283,7 @@ For AI continuation, read PROJECT.md in the repository root.
 
         gr.Markdown(
             "<p style='color:#94a3b8;font-size:0.78rem;margin-top:1rem'>"
-            "MigrationIQ · Apache 2.0 · "
+            "SQLShiftAI · Apache 2.0 · "
             "<a href='https://github.com/dgvj-work/sql_shift_ai' style='color:#3b82f6'>GitHub</a>"
             "</p>"
         )

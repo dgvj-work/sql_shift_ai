@@ -1,4 +1,4 @@
-"""Gradio event handlers for MigrationIQ workbench."""
+"""Gradio event handlers for SQLShiftAI workbench."""
 
 from __future__ import annotations
 
@@ -134,7 +134,7 @@ def _resolve_repo_path(upload_file, use_sample: bool) -> Path | None:
     if not path.exists():
         return None
     if path.suffix.lower() == ".zip":
-        tmp = Path(tempfile.mkdtemp(prefix="migrationiq_"))
+        tmp = Path(tempfile.mkdtemp(prefix="sqlshiftai_"))
         with zipfile.ZipFile(path) as zf:
             zf.extractall(tmp)
         return tmp

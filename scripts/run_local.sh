@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# MigrationIQ — Local setup, test, and run script
+# SQLShiftAI — Local setup, test, and run script
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-echo "🔄 MigrationIQ / SQLShift AI — Local Setup"
+echo "🔄 SQLShiftAI — Local Setup"
 echo "=========================================="
 echo ""
 
