@@ -160,6 +160,32 @@ textarea, input {{
     color: {C_ACCENT} !important;
 }}
 
+/* Keep Convert / Upload actions compact — don't stretch to file-drop height */
+.action-btn button,
+.upload-action-btn button {{
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 48px !important;
+    width: 100% !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+    padding: 0.55rem 0.85rem !important;
+}}
+.upload-action-col {{
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    padding-top: 1.55rem !important; /* align with file label */
+}}
+.sql-upload-box {{
+    flex-grow: 1 !important;
+}}
+.sql-upload-box [data-testid="file"],
+.sql-upload-box .wrap,
+.sql-upload-box .upload-container {{
+    min-height: 7.5rem !important;
+}}
+
 /* Fallback for unscoped Gradio dataframe/file widgets */
 [data-testid="dataframe"] table,
 [data-testid="dataframe"] th,

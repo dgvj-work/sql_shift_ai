@@ -119,29 +119,44 @@ def _build_demo() -> gr.Blocks:
                     info="Fills SQL, converts, runs sample preview.",
                 )
 
-                with gr.Row():
+                with gr.Row(equal_height=True):
                     source = gr.Dropdown(
                         choices=SOURCE_DROPDOWN,
                         value="snowflake",
                         label="SQL is written for",
+                        scale=2,
+                        min_width=160,
                     )
                     target = gr.Dropdown(
                         choices=TARGET_DROPDOWN,
                         value="pandas",
                         label="Convert to",
+                        scale=3,
+                        min_width=220,
                     )
-                    convert_btn = gr.Button("Convert", variant="primary")
+                    convert_btn = gr.Button(
+                        "Convert",
+                        variant="primary",
+                        scale=1,
+                        min_width=120,
+                        elem_classes=["action-btn"],
+                    )
 
-                with gr.Row():
+                with gr.Row(equal_height=False):
                     sql_upload = gr.File(
                         label="Upload SQL (.sql / .txt) or a .zip of SQL files",
                         file_types=[".sql", ".txt", ".ddl", ".zip"],
                         type="filepath",
+                        scale=4,
+                        min_width=280,
+                        elem_classes=["sql-upload-box"],
                     )
-                    upload_convert_btn = gr.Button(
-                        "Upload & Convert → Download",
-                        variant="primary",
-                    )
+                    with gr.Column(scale=1, min_width=180, elem_classes=["upload-action-col"]):
+                        upload_convert_btn = gr.Button(
+                            "Upload & Convert → Download",
+                            variant="primary",
+                            elem_classes=["action-btn", "upload-action-btn"],
+                        )
 
                 status = gr.Textbox(
                     label="Status",
