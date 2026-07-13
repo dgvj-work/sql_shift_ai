@@ -1,13 +1,14 @@
 {
-  "model_type": "sqlshift-ai-agent",
+  "model_type": "morphsql-agent",
+  "product_name": "MorphSQL",
   "task": "text-classification",
   "labels": [
     "low",
     "medium",
     "high"
   ],
-  "version": "0.3.0",
-  "description": "TF-IDF + LogisticRegression risk classifier for SQL migration",
+  "version": "0.4.0",
+  "description": "TF-IDF + LogisticRegression risk classifier for MorphSQL",
   "vertica_syntax_patterns": [
     "\\bSEGMENTED\\s+BY\\s+HASH\\s*\\([^)]+\\)\\s*ALL\\s*NODES",
     "\\bENCODED\\s+BY\\s+[^;\\n]+",
@@ -24,6 +25,8 @@
     "snowflake"
   ],
   "supported_targets": [
+    "pandas",
+    "pyspark",
     "snowflake",
     "dbt-snowflake",
     "bigquery"

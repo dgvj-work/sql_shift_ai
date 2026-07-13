@@ -24,7 +24,8 @@ metrics:
 
 Small **TF-IDF + LogisticRegression** model that scores SQL migration risk (`low` / `medium` / `high`).
 
-Used by [MorphSQL](https://huggingface.co/spaces/dgvj-work/sqlshift-ai) (`sqlshift-ai` package).
+Used by **MorphSQL** ([Space](https://huggingface.co/spaces/dgvj-work/sqlshift-ai)).  
+Python package import: `sqlshift` (PyPI: `sqlshift-ai`).
 
 ## Files
 | File | Purpose |

@@ -30,6 +30,9 @@ suggested_hardware: cpu-basic
 
 # MorphSQL
 
+**Public product name: MorphSQL** (Hugging Face Space title).  
+Technical slug: `dgvj-work/sqlshift-ai` · Python import: `sqlshift`
+
 Convert warehouse SQL → **pandas**, **PySpark**, Snowflake, BigQuery, or **dbt** — then **download** the result.
 
 ## How to use (30 seconds)

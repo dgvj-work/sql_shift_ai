@@ -141,7 +141,7 @@ def _resolve_repo_path(upload_file, use_sample: bool) -> Path | None:
     if not path.exists():
         return None
     if path.suffix.lower() == ".zip":
-        tmp = Path(tempfile.mkdtemp(prefix="sqlshiftai_"))
+        tmp = Path(tempfile.mkdtemp(prefix="morphsql_"))
         with zipfile.ZipFile(path) as zf:
             zf.extractall(tmp)
         return tmp

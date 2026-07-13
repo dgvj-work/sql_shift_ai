@@ -2,8 +2,10 @@
 language: en
 license: apache-2.0
 library_name: sqlshift-ai
+# Product name on the Hub UI / Space: MorphSQL
 pipeline_tag: text-classification
 tags:
+  - morphsql
   - agent
   - code
   - sql
@@ -21,6 +23,8 @@ datasets:
 # MorphSQL
 
 Convert Vertica / Oracle / Redshift / BigQuery SQL to **pandas**, **PySpark**, Snowflake, BigQuery, or dbt.
+
+> Brand: **MorphSQL** · Package import: `sqlshift` · Hub slug: `dgvj-work/sqlshift-ai`
 
 ## Artifacts
 - `risk_classifier.joblib` — migration risk (`low` / `medium` / `high`)

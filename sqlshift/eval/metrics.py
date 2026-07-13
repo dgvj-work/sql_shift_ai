@@ -92,7 +92,10 @@ def llm_judge_optional(pred: str, gold: str, source_sql: str) -> float | None:
         )
         text = client.text_generation(
             prompt,
-            model=os.getenv("SQLSHIFTAI_MODEL", "Qwen/Qwen2.5-3B-Instruct"),
+            model=os.getenv(
+                "MORPHSQL_MODEL",
+                os.getenv("SQLSHIFTAI_MODEL", "Qwen/Qwen2.5-3B-Instruct"),
+            ),
             max_new_tokens=8,
         )
         import re

@@ -9,6 +9,18 @@ Convert Vertica / Oracle / Redshift / BigQuery / Snowflake SQL to **pandas** or 
 
 Built for data scientists: upload or paste SQL → convert → sample preview → download `.py` / `.sql`.
 
+## Naming (one product)
+
+| Layer | Name |
+|-------|------|
+| **Product / Hugging Face Space title** | **MorphSQL** |
+| Python import | `sqlshift` |
+| PyPI package | `sqlshift-ai` |
+| GitHub repo | `sql_shift_ai` |
+| HF Space / model URL slug | `dgvj-work/sqlshift-ai` |
+
+Use **MorphSQL** in the UI, docs, and on Hugging Face. Technical IDs (`sqlshift` / `sql_shift_ai`) stay for imports and repo URLs only.
+
 ```python
 from sqlshift.ai import pipeline
 print(pipeline("sql-migration")("SELECT COALESCE(a, 0) FROM t", source="snowflake", target="pandas"))
@@ -126,7 +138,7 @@ python scripts/check_space.py
 ```
 
 The Space card / metadata lives in `README_HF_SPACE.md` (copied to Space `README.md` on deploy).
-Set `HF_TOKEN` in Space secrets (automatic on HF). Optional: `SQLSHIFTAI_MODEL` to change copilot model.
+Set `HF_TOKEN` in Space secrets (automatic on HF). Optional: `MORPHSQL_MODEL` to change the copilot model.
 
 ---
 

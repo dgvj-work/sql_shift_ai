@@ -104,11 +104,12 @@ def train_and_save(model_dir: Path | None = None, *, force: bool = False) -> Pat
     from sqlshift.translator.engine import VERTICA_SYNTAX_REPLACEMENTS
 
     rules = {
-        "model_type": "sqlshift-ai-agent",
+        "model_type": "morphsql-agent",
+        "product_name": "MorphSQL",
         "task": "text-classification",
         "labels": LABELS,
-        "version": "0.3.0",
-        "description": "TF-IDF + LogisticRegression risk classifier for SQL migration",
+        "version": "0.4.0",
+        "description": "TF-IDF + LogisticRegression risk classifier for MorphSQL",
         "vertica_syntax_patterns": [p for p, _ in VERTICA_SYNTAX_REPLACEMENTS],
         "supported_sources": ["vertica", "oracle", "redshift", "bigquery", "snowflake"],
         "supported_targets": ["pandas", "pyspark", "snowflake", "dbt-snowflake", "bigquery"],

@@ -1,4 +1,4 @@
-"""SQLShiftAI CLI — sqlshift command-line interface."""
+"""MorphSQL CLI — `sqlshift` command-line interface."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from sqlshift.translator.engine import translate_sql
 
 app = typer.Typer(
     name="sqlshift",
-    help=f"{__product_name__} — AI-powered data platform migration intelligence",
+    help=f"{__product_name__} — AI-powered SQL migration toolkit",
     add_completion=False,
 )
 console = Console()
@@ -47,7 +47,7 @@ def _to_dialect(d: SourceDialect | TargetDialect) -> Dialect:
 
 @app.callback()
 def main():
-    """SQLShiftAI — migration intelligence toolkit."""
+    """MorphSQL — migration intelligence toolkit."""
     pass
 
 

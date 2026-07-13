@@ -1,4 +1,4 @@
-"""Tests for MorphSQL / sqlshift-ai."""
+"""Tests for MorphSQL."""
 
 import re
 from pathlib import Path

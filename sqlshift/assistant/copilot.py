@@ -10,8 +10,8 @@ from sqlshift.models import MigrationReport
 from sqlshift.risk.scorer import recommend_workload_action
 
 DEFAULT_MODEL = os.getenv(
-    "SQLSHIFTAI_MODEL",
-    os.getenv("MIGRATIONIQ_MODEL", "Qwen/Qwen2.5-3B-Instruct"),
+    "MORPHSQL_MODEL",
+    os.getenv("SQLSHIFTAI_MODEL", os.getenv("MIGRATIONIQ_MODEL", "Qwen/Qwen2.5-3B-Instruct")),
 )
 
 SYSTEM_PROMPT = """You are MorphSQL Copilot, an expert data platform migration advisor.
@@ -252,7 +252,7 @@ class MigrationCopilot:
             if "lineage" in msg or "depend" in msg or "impact" in msg:
                 sections.append(
                     f"\nLineage coverage is **{d.lineage_coverage_pct:.0f}%**. "
-                    "Use the Workbench → Lineage tab for the interactive graph.\n\n"
+                    "Open **More → Repository workbench** for the interactive lineage graph.\n\n"
                     "**Cutover risk tip:** migrate objects with few downstream dependents first; "
                     "leave hubs (high fan-out) for later phases with extra validation."
                 )
@@ -315,7 +315,7 @@ class MigrationCopilot:
         if any(k in msg for k in ("cutover", "plan", "roadmap", "phase")):
             sections.append(
                 "\n**Suggested cutover plan**\n"
-                "1. Discovery + lineage (Workbench scan)\n"
+                "1. Discovery + lineage (**More → Repository workbench**)\n"
                 "2. Migrate low-risk objects + generate dbt scaffold\n"
                 "3. Parallel run with reconciliation tests\n"
                 "4. Redesign high-risk procedures\n"
@@ -332,7 +332,7 @@ class MigrationCopilot:
 
         if sql_snippet.strip() and any(k in msg for k in ("this", "sql", "convert", "what", "explain")):
             sections.append(
-                "\nI see SQL loaded in context. Use **Object Inspector → Assess & Convert** "
+                "\nI see SQL loaded in context. Use **More → Object assess & convert** "
                 "for dialect output and risk score. Ask specifically about functions, "
                 "incremental strategy, or dbt decomposition for this object."
             )
@@ -354,7 +354,7 @@ class MigrationCopilot:
             )
         else:
             sections.append(
-                "No scan loaded yet — run **Migration Workbench** first for grounded answers, "
+                "No scan loaded yet — run **More → Repository workbench** first for grounded answers, "
                 "or ask a dialect/process question."
             )
         if diffs:

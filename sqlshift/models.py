@@ -1,4 +1,4 @@
-"""Core data models for SQLShiftAI."""
+"""Core data models for MorphSQL."""
 
 from __future__ import annotations
 
