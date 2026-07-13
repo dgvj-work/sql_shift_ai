@@ -12,11 +12,15 @@ from demo.handlers import (
     PLAYGROUND_EXAMPLE_LABELS,
     SOURCE_DROPDOWN,
     TARGET_DROPDOWN,
+    analyze_sql_object_ui,
     convert_for_ui,
+    copilot_chat,
     get_leaderboard_md,
     on_example_selected,
     run_behavior_rag,
     run_eval_suite,
+    run_feature_migration,
+    run_workbench_ui,
     submit_eval_score,
 )
 from demo.theme import CUSTOM_CSS, build_theme
@@ -194,6 +198,15 @@ into pandas or PySpark you can run in Jupyter / Colab / Databricks.
 | **Snowflake / BigQuery SQL** | Keeping transforms in the warehouse |
 | **dbt project** | Productionizing SQL into models |
 
+## More tab (Lab)
+| Tool | Use when |
+|---|---|
+| **Object assess** | Need risk/complexity scoring for one SQL object |
+| **Repository workbench** | Scanning a SQL repo (sample or zip) with lineage + validation |
+| **ML feature SQL** | Migrating Vertica feature-engineering SQL → Snowflake/dbt |
+| **Copilot** | Migration Q&A (keyword / optional HF LLM) |
+| **Behavior notes / Eval** | Dialect quirks lookup and offline conversion scoring |
+
 ```python
 from sqlshift.ai import pipeline
 out = pipeline("sql-migration")(sql, source="snowflake", target="pandas")
@@ -206,7 +219,158 @@ out = pipeline("sql-migration")(sql, source="snowflake", target="pandas")
                 )
 
             with gr.Tab("More"):
-                gr.Markdown("Optional extras. Day-to-day use is the **Convert** tab.")
+                gr.Markdown(
+                    "Lab extras beyond day-to-day Convert: assess objects, scan a repo, "
+                    "migrate feature SQL, ask the copilot, or run offline eval."
+                )
+                report_state = gr.State(value=None)
+
+                with gr.Accordion("Object assess & convert", open=False):
+                    gr.Markdown(
+                        "Score complexity/risk and convert a single SQL object "
+                        "(pandas, PySpark, warehouse SQL, or dbt)."
+                    )
+                    with gr.Row():
+                        assess_source = gr.Dropdown(
+                            choices=SOURCE_DROPDOWN, value="vertica", label="Source"
+                        )
+                        assess_target = gr.Dropdown(
+                            choices=TARGET_DROPDOWN, value="snowflake", label="Target"
+                        )
+                        assess_btn = gr.Button("Assess & Convert", variant="secondary")
+                    assess_sql = gr.Textbox(
+                        label="SQL object",
+                        value="SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount "
+                        "FROM staging.orders WHERE order_date >= CURRENT_DATE - 30",
+                        lines=8,
+                    )
+                    assess_badge = gr.Textbox(label="Score", interactive=False, max_lines=1)
+                    with gr.Row():
+                        assess_analysis = gr.Markdown()
+                        assess_risk = gr.HTML()
+                    assess_out = gr.Textbox(label="Converted output", lines=10)
+                    assess_notes = gr.Markdown()
+                    assess_btn.click(
+                        analyze_sql_object_ui,
+                        [assess_sql, assess_source, assess_target],
+                        [assess_analysis, assess_risk, assess_badge, assess_out, assess_notes],
+                    )
+
+                with gr.Accordion("Repository workbench", open=False):
+                    gr.Markdown(
+                        "Scan the sample Vertica repo (or upload a `.zip`), then convert / "
+                        "validate / preview dbt + lineage."
+                    )
+                    with gr.Row():
+                        wb_source = gr.Dropdown(
+                            choices=SOURCE_DROPDOWN, value="vertica", label="Source"
+                        )
+                        wb_target = gr.Dropdown(
+                            choices=TARGET_DROPDOWN, value="snowflake", label="Target"
+                        )
+                        wb_sample = gr.Checkbox(value=True, label="Use sample repository")
+                    wb_upload = gr.File(label="Or upload SQL repo (.zip)", file_types=[".zip"])
+                    wb_btn = gr.Button("Run migration intelligence", variant="secondary")
+                    wb_summary = gr.Markdown()
+                    wb_metrics = gr.Markdown()
+                    with gr.Row():
+                        wb_risk = gr.HTML()
+                        wb_dist = gr.HTML()
+                    wb_objects = gr.Markdown()
+                    wb_lineage = gr.HTML()
+                    with gr.Row():
+                        wb_rationalization = gr.Markdown()
+                        wb_runbook = gr.Markdown()
+                    with gr.Row():
+                        wb_dbt = gr.Markdown()
+                        wb_validation = gr.Markdown()
+                    wb_export = gr.Code(language="json", lines=8, label="Export JSON")
+                    wb_btn.click(
+                        run_workbench_ui,
+                        [wb_upload, wb_sample, wb_source, wb_target],
+                        [
+                            wb_summary,
+                            wb_objects,
+                            wb_rationalization,
+                            wb_runbook,
+                            wb_dbt,
+                            wb_validation,
+                            wb_metrics,
+                            wb_risk,
+                            wb_dist,
+                            wb_lineage,
+                            wb_export,
+                            report_state,
+                        ],
+                    )
+
+                with gr.Accordion("ML feature SQL migration", open=False):
+                    gr.Markdown(
+                        "Convert `examples/ml_features/churn_feature_sql.sql` "
+                        "(Vertica feature engineering) → Snowflake SQL or a dbt feature mart."
+                    )
+                    with gr.Row():
+                        feat_target = gr.Dropdown(
+                            choices=[
+                                ("Snowflake SQL", "snowflake"),
+                                ("dbt project (Snowflake)", "dbt-snowflake"),
+                            ],
+                            value="snowflake",
+                            label="Output",
+                        )
+                        feat_btn = gr.Button("Migrate feature SQL", variant="secondary")
+                    feat_md = gr.Markdown()
+                    feat_out = gr.Textbox(label="Output", lines=14)
+                    feat_btn.click(run_feature_migration, [feat_target], [feat_md, feat_out])
+
+                with gr.Accordion("Migration copilot", open=False):
+                    gr.Markdown(
+                        "Ask migration questions. Uses keyword/HF fallback guidance "
+                        "(set `HF_TOKEN` for LLM replies)."
+                    )
+                    copilot = gr.Chatbot(label="Copilot", height=320)
+                    copilot_msg = gr.Textbox(
+                        label="Message",
+                        placeholder="e.g. How should I handle ZEROIFNULL on Snowflake?",
+                        lines=2,
+                    )
+                    with gr.Row():
+                        copilot_source = gr.Dropdown(
+                            choices=SOURCE_DROPDOWN, value="vertica", label="Source"
+                        )
+                        copilot_target = gr.Dropdown(
+                            choices=TARGET_DROPDOWN, value="snowflake", label="Target"
+                        )
+                        copilot_btn = gr.Button("Ask", variant="secondary")
+                    copilot_sql = gr.Textbox(
+                        label="Optional SQL context",
+                        value="SELECT ZEROIFNULL(amount) FROM staging.transactions",
+                        lines=3,
+                    )
+                    copilot_btn.click(
+                        copilot_chat,
+                        [
+                            copilot_msg,
+                            copilot,
+                            report_state,
+                            copilot_sql,
+                            copilot_source,
+                            copilot_target,
+                        ],
+                        [copilot, copilot_msg],
+                    )
+                    copilot_msg.submit(
+                        copilot_chat,
+                        [
+                            copilot_msg,
+                            copilot,
+                            report_state,
+                            copilot_sql,
+                            copilot_source,
+                            copilot_target,
+                        ],
+                        [copilot, copilot_msg],
+                    )
 
                 with gr.Accordion("Dialect behavior notes", open=False):
                     rag_q = gr.Textbox(

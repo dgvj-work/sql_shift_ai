@@ -212,7 +212,14 @@ def run_migration_workbench(
     try:
         source_d = Dialect(source)
         wants_dbt = is_dbt_target(target)
-        target_d = Dialect("snowflake" if wants_dbt else target)
+        if wants_dbt:
+            target_d = Dialect.SNOWFLAKE
+        elif is_pandas_target(target):
+            target_d = Dialect.PANDAS
+        elif is_pyspark_target(target):
+            target_d = Dialect.PYSPARK
+        else:
+            target_d = Dialect(target)
 
         pipeline = MigrationPipeline(source=source_d, target=target_d)
         report = pipeline.analyze(str(repo_path))
@@ -1170,6 +1177,44 @@ def run_feature_migration(target: str) -> tuple[str, str]:
         md.append("**Review**")
         md.extend(f"- {r}" for r in review[:6])
     return "\n".join(md), out
+
+
+def analyze_sql_object_ui(sql: str, source: str, target: str) -> tuple:
+    """Gradio-friendly object assess (Plotly → HTML)."""
+    analysis, risk_fig, badge, output, notes = analyze_sql_object(sql, source, target)
+    return analysis, figure_to_html(risk_fig), badge, output, notes
+
+
+def run_workbench_ui(upload_file, use_sample: bool, source: str, target: str) -> tuple:
+    """Gradio-friendly workbench (Plotly figs → HTML)."""
+    (
+        summary,
+        objects,
+        rationalization,
+        runbook,
+        dbt_preview,
+        validation,
+        metrics,
+        risk_fig,
+        dist_fig,
+        lineage_fig,
+        export,
+        report_data,
+    ) = run_migration_workbench(upload_file, use_sample, source, target)
+    return (
+        summary,
+        objects,
+        rationalization,
+        runbook,
+        dbt_preview,
+        validation,
+        metrics,
+        figure_to_html(risk_fig) if isinstance(risk_fig, go.Figure) else str(risk_fig),
+        figure_to_html(dist_fig) if isinstance(dist_fig, go.Figure) else str(dist_fig),
+        figure_to_html(lineage_fig) if isinstance(lineage_fig, go.Figure) else str(lineage_fig),
+        export,
+        report_data,
+    )
 
 
 def get_leaderboard_md() -> str:

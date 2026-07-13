@@ -175,6 +175,25 @@ def convert(
         if wants_dbt:
             pipeline.generate_dbt(report, out / "dbt")
             console.print(f"[green]✓[/] dbt projects written → {out / 'dbt'}")
+        if generate_lineage:
+            from sqlshift.lineage import build_lineage_graph, format_lineage_tree
+
+            graph = build_lineage_graph(report.objects, _to_dialect(source))
+            lines = [
+                f"# MorphSQL lineage · {path}",
+                f"# nodes={graph.number_of_nodes()} edges={graph.number_of_edges()}",
+                "",
+            ]
+            roots = [n for n in graph.nodes() if graph.in_degree(n) == 0] or list(graph.nodes())[:5]
+            for root in roots[:20]:
+                try:
+                    lines.append(format_lineage_tree(graph, root))
+                    lines.append("")
+                except Exception:
+                    lines.append(f"- {root}")
+            lineage_path = out / "lineage.txt"
+            lineage_path.write_text("\n".join(lines), encoding="utf-8")
+            console.print(f"[green]✓[/] Lineage written → {lineage_path}")
         console.print(f"[green]✓[/] Converted {len(report.objects)} objects → {out}")
 
 

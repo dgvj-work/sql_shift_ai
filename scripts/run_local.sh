@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# SQLShiftAI — Local setup, test, and run script
+# MorphSQL — Local setup, test, and run script
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-echo "🔄 SQLShiftAI — Local Setup"
+echo "🔄 MorphSQL — Local Setup"
 echo "=========================================="
 echo ""
 
@@ -34,7 +34,7 @@ sqlshift analyze examples/vertica_legacy --source vertica --target snowflake --o
 # 5. Run full migration pipeline
 echo ""
 echo "🚀 Running full migration pipeline..."
-sqlshift migrate examples/vertica_legacy --output ./migration-output
+sqlshift migrate examples/vertica_legacy --source vertica --target snowflake --output ./migration-output
 
 # 6. Verify outputs
 echo ""
@@ -44,17 +44,39 @@ test -d ./migration-output/dbt && echo "   ✓ dbt projects generated"
 DBT_COUNT=$(find ./migration-output/dbt -name "dbt_project.yml" | wc -l | tr -d ' ')
 echo "   ✓ $DBT_COUNT dbt projects created"
 
-# 7. Test app imports
+# 7. Test app + handler surfaces
 echo ""
-echo "🌐 Testing Gradio app..."
+echo "🌐 Testing Gradio handlers..."
 python -c "
-from app import analyze_sql, analyze_repository, convert_sql
-sql = open('examples/vertica_legacy/procedures/SP_BUILD_CUSTOMER_DAILY.sql').read()
-s, d, f = analyze_sql(sql, 'vertica', 'snowflake')
-t, m = convert_sql(sql, 'vertica', 'snowflake')
-rs, rd, rc, rj = analyze_repository('vertica', 'snowflake')
-assert 'Complexity' in s and len(t) > 0 and 'Total Objects' in rs
-print('   ✓ All app functions working')
+from pathlib import Path
+import pandas as pd
+from demo.handlers import (
+    convert_for_ui,
+    analyze_sql_object,
+    get_sample_workbench,
+    run_feature_migration,
+    run_behavior_rag,
+)
+from app import _build_demo
+
+sql = Path('examples/vertica_legacy/procedures/SP_BUILD_CUSTOMER_DAILY.sql').read_text()
+notes, output, status, share, preview, path, nb, api = convert_for_ui(sql, 'vertica', 'pandas')
+assert output.strip() and isinstance(preview, pd.DataFrame)
+
+analysis, fig, badge, out, notes2 = analyze_sql_object(sql, 'vertica', 'snowflake')
+assert out.strip() and badge
+
+wb = get_sample_workbench()
+assert len(wb) == 12
+
+md, feat = run_feature_migration('snowflake')
+assert feat.strip()
+
+rag = run_behavior_rag('ZEROIFNULL', 'vertica', 'snowflake')
+assert 'ZEROIFNULL' in rag.upper() or len(rag) > 20
+
+assert _build_demo() is not None
+print('   ✓ Convert, assess, workbench, features, RAG, Gradio build OK')
 "
 
 echo ""
