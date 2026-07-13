@@ -266,8 +266,8 @@ class TestTranslator:
         from demo.handlers import run_hero_agent
 
         md, out, badge, share = run_hero_agent(
-            "SELECT ZEROIFNULL(a) AS a FROM t",
-            "vertica",
+            "SELECT COALESCE(a, 0) AS a FROM t",
+            "snowflake",
             "pandas",
         )
         assert "import pandas as pd" in out

@@ -11,7 +11,7 @@ Built for data scientists: convert → sample preview → download `.py`.
 
 ```python
 from sqlshift.ai import pipeline
-print(pipeline("sql-migration")("SELECT ZEROIFNULL(a) FROM t", source="vertica", target="pandas"))
+print(pipeline("sql-migration")("SELECT COALESCE(a, 0) FROM t", source="snowflake", target="pandas"))
 ```
 
 

@@ -504,20 +504,21 @@ def report_to_context(report_data: dict | MigrationReport | None) -> str:
 
 
 HERO_EXAMPLE = (
-    "SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount, "
-    "NVL(discount, 0) AS discount FROM staging.orders "
+    "SELECT customer_id, COALESCE(order_amount, 0) AS order_amount, "
+    "COALESCE(discount, 0) AS discount FROM staging.orders "
     "WHERE order_date >= CURRENT_DATE - 30"
 )
 
 FEATURE_SQL_PATH = Path(__file__).parent.parent / "examples" / "ml_features" / "churn_feature_sql.sql"
 
 # Human-readable labels (defined before convert helpers)
+# Snowflake first — most common warehouse for DS/AI users
 SOURCE_LABELS = {
-    "vertica": "Vertica",
-    "oracle": "Oracle",
-    "redshift": "Redshift",
-    "bigquery": "BigQuery",
     "snowflake": "Snowflake",
+    "bigquery": "BigQuery",
+    "redshift": "Redshift",
+    "oracle": "Oracle",
+    "vertica": "Vertica",
 }
 TARGET_LABELS = {
     "pandas": "Python (pandas)",
@@ -847,8 +848,9 @@ def convert_for_ui(sql: str, source: str, target: str):
 
 
 PLAYGROUND_EXAMPLE_LABELS = [
-    "DS: Vertica orders → pandas (fillna / filters)",
+    "DS: Snowflake orders → pandas (fillna / filters)",
     "AI: Feature aggregates → pandas (training features)",
+    "DS: Vertica ZEROIFNULL → pandas",
     "DS: Oracle dual constants → pandas",
     "DS: Redshift window slice → pandas",
     "DS: BigQuery null handling → pandas",
@@ -858,12 +860,17 @@ PLAYGROUND_EXAMPLE_LABELS = [
 
 PLAYGROUND_EXAMPLES = [
     [
-        "SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount, NVL(discount, 0) AS discount FROM staging.orders WHERE order_date >= CURRENT_DATE - 30",
-        "vertica",
+        "SELECT customer_id, COALESCE(order_amount, 0) AS order_amount, COALESCE(discount, 0) AS discount FROM staging.orders WHERE order_date >= CURRENT_DATE - 30",
+        "snowflake",
         "pandas",
     ],
     [
         "SELECT user_id, COUNT(*) AS event_count_90d, SUM(ZEROIFNULL(event_value)) AS value_sum_90d, AVG(ZEROIFNULL(event_value)) AS value_avg_90d FROM staging.product_events WHERE event_ts >= CURRENT_DATE - 90 GROUP BY user_id",
+        "vertica",
+        "pandas",
+    ],
+    [
+        "SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount, NVL(discount, 0) AS discount FROM staging.orders WHERE order_date >= CURRENT_DATE - 30",
         "vertica",
         "pandas",
     ],
@@ -924,7 +931,7 @@ AGENT_PROMPTS = [
     (
         "Convert this SQL to pandas",
         PLAYGROUND_EXAMPLES[0][0],
-        "vertica",
+        "snowflake",
         "pandas",
     ),
     (
@@ -935,7 +942,7 @@ AGENT_PROMPTS = [
     ),
     (
         "Emit a dbt project from this procedure",
-        PLAYGROUND_EXAMPLES[6][0],
+        PLAYGROUND_EXAMPLES[7][0],
         "vertica",
         "dbt-snowflake",
     ),

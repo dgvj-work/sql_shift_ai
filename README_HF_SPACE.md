@@ -39,8 +39,8 @@ suggested_hardware: cpu-basic
 ```python
 from sqlshift.ai import pipeline
 print(pipeline("sql-migration")(
-    "SELECT ZEROIFNULL(a) FROM t",
-    source="vertica",
+    "SELECT COALESCE(a, 0) FROM t",
+    source="snowflake",
     target="pandas",
 ))
 ```

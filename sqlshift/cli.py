@@ -26,11 +26,11 @@ console = Console()
 
 
 class SourceDialect(str, Enum):
-    vertica = "vertica"
-    oracle = "oracle"
-    redshift = "redshift"
-    bigquery = "bigquery"
     snowflake = "snowflake"
+    bigquery = "bigquery"
+    redshift = "redshift"
+    oracle = "oracle"
+    vertica = "vertica"
 
 
 class TargetDialect(str, Enum):
@@ -53,7 +53,7 @@ def main():
 @app.command()
 def analyze(
     path: str = typer.Argument(..., help="Path to SQL repository (directory or .zip)"),
-    source: SourceDialect = typer.Option(SourceDialect.vertica, "--source", "-s"),
+    source: SourceDialect = typer.Option(SourceDialect.snowflake, "--source", "-s"),
     target: TargetDialect = typer.Option(TargetDialect.pandas, "--target", "-t"),
     output: Optional[str] = typer.Option(None, "--output", "-o", help="Output directory"),
 ):
@@ -96,7 +96,7 @@ def analyze(
 @app.command()
 def convert(
     path: str = typer.Argument(..., help="Path to SQL file or repository"),
-    source: SourceDialect = typer.Option(SourceDialect.vertica, "--source", "-s"),
+    source: SourceDialect = typer.Option(SourceDialect.snowflake, "--source", "-s"),
     target: TargetDialect = typer.Option(TargetDialect.pandas, "--target", "-t"),
     output: Optional[str] = typer.Option(None, "--output", "-o"),
     generate_tests: bool = typer.Option(False, "--generate-tests"),
@@ -169,7 +169,7 @@ def convert(
 @app.command()
 def validate(
     path: str = typer.Argument(..., help="Path to SQL repository"),
-    source: SourceDialect = typer.Option(SourceDialect.vertica, "--source", "-s"),
+    source: SourceDialect = typer.Option(SourceDialect.snowflake, "--source", "-s"),
     target: TargetDialect = typer.Option(TargetDialect.pandas, "--target", "-t"),
     tolerance: float = typer.Option(0.01, "--tolerance"),
     output: Optional[str] = typer.Option(None, "--output", "-o"),
@@ -204,7 +204,7 @@ def validate(
 @app.command(name="migrate")
 def migrate_cmd(
     path: str = typer.Argument(..., help="Path to SQL repository"),
-    source: SourceDialect = typer.Option(SourceDialect.vertica, "--source", "-s"),
+    source: SourceDialect = typer.Option(SourceDialect.snowflake, "--source", "-s"),
     target: TargetDialect = typer.Option(TargetDialect.pandas, "--target", "-t"),
     output: str = typer.Option("migration-output", "--output", "-o"),
 ):

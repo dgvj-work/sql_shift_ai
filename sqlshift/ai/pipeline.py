@@ -17,7 +17,7 @@ def pipeline(task: str = "sql-migration", **kwargs):
 
     Examples:
         pipe = pipeline("sql-migration")
-        pipe("SELECT ZEROIFNULL(a) FROM t", source="vertica", target="pandas")
+        pipe("SELECT COALESCE(a, 0) FROM t", source="snowflake", target="pandas")
 
         pipe = pipeline("sql-risk-classification")
         pipe("CREATE PROCEDURE ...")
@@ -33,7 +33,7 @@ def pipeline(task: str = "sql-migration", **kwargs):
 
 
 class SQLMigrationPipeline:
-    def __init__(self, source: str = "vertica", target: str = "pandas"):
+    def __init__(self, source: str = "snowflake", target: str = "pandas"):
         self.source = source
         self.target = target
         self.agent = SQLMigrationAgent()
@@ -60,7 +60,7 @@ class SQLRiskPipeline:
         return self.model.predict(sql)
 
 
-def migrate_sql(sql: str, source: str = "vertica", target: str = "pandas") -> dict[str, Any]:
+def migrate_sql(sql: str, source: str = "snowflake", target: str = "pandas") -> dict[str, Any]:
     """One-liner helper used in model card examples."""
     if is_pandas_target(target):
         out_target = Dialect.PANDAS

@@ -56,8 +56,8 @@ class SQLMigrationAgent:
         self,
         prompt: str,
         sql: str = "",
-        source: str = "vertica",
-        target: str = "snowflake",
+        source: str = "snowflake",
+        target: str = "pandas",
     ) -> AgentResult:
         prompt = (prompt or "").strip()
         sql = (sql or "").strip()

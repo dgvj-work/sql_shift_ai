@@ -32,7 +32,7 @@ Convert Vertica / Oracle / Redshift / BigQuery SQL to **pandas**, Snowflake, Big
 ```python
 from sqlshift.ai import pipeline
 
-print(pipeline("sql-migration")("SELECT ZEROIFNULL(a) FROM t", source="vertica", target="pandas"))
+print(pipeline("sql-migration")("SELECT COALESCE(a, 0) FROM t", source="snowflake", target="pandas"))
 print(pipeline("sql-risk-classification")("EXECUTE IMMEDIATE 'x'"))
 ```
 

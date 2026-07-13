@@ -27,7 +27,7 @@ GITHUB_URL = "https://github.com/dgvj-work/sql_shift_ai"
 ensure_pairs_file()
 train_and_save()
 
-_BOOT = convert_for_ui(HERO_EXAMPLE, "vertica", "pandas")
+_BOOT = convert_for_ui(HERO_EXAMPLE, "snowflake", "pandas")
 
 
 def _build_demo() -> gr.Blocks:
@@ -64,7 +64,7 @@ def _build_demo() -> gr.Blocks:
                 with gr.Row():
                     source = gr.Dropdown(
                         choices=SOURCE_DROPDOWN,
-                        value="vertica",
+                        value="snowflake",
                         label="SQL is written for",
                     )
                     target = gr.Dropdown(
@@ -194,7 +194,7 @@ into pandas you can run in Jupyter / Colab.
 
 ```python
 from sqlshift.ai import pipeline
-out = pipeline("sql-migration")(sql, source="vertica", target="pandas")
+out = pipeline("sql-migration")(sql, source="snowflake", target="pandas")
 # out["converted_sql"] → exec / save as features.py
 ```
 
