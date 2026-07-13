@@ -148,6 +148,34 @@ class TestTranslator:
         assert "models/staging/" in rendered
         assert "COALESCE" in rendered.upper()
 
+    def test_eval_suite_runs(self):
+        from sqlshift.eval import ensure_pairs_file, run_eval
+
+        ensure_pairs_file()
+        results, summary = run_eval(limit=20, categories=["function", "date"])
+        assert summary["n_pairs"] >= 5
+        assert 0 <= summary["token_f1"] <= 1
+        assert len(results) == summary["n_pairs"]
+
+    def test_behavior_rag_retrieves(self):
+        from sqlshift.intelligence.rag import get_rag
+
+        hits = get_rag().retrieve("empty string NULL oracle snowflake", top_k=3)
+        assert hits
+        assert hits[0].name
+
+    def test_hero_agent(self):
+        from demo.handlers import run_hero_agent
+
+        md, out, badge = run_hero_agent(
+            "SELECT ZEROIFNULL(a) FROM t WHERE d >= CURRENT_DATE - 7",
+            "vertica",
+            "snowflake",
+        )
+        assert "COALESCE" in out.upper()
+        assert "Agent" in md or "Confidence" in md
+        assert "%" in badge
+
     def test_cte_query_to_dbt_models(self):
         from sqlshift.dbt_generator.decomposer import decompose_to_dbt
 

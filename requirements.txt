@@ -11,3 +11,6 @@ tabulate>=0.9
 gradio>=4.44
 plotly>=5.18
 huggingface_hub>=0.23
+# Optional HF/ML extras (Space will keyword-fallback if missing):
+# sentence-transformers>=2.2
+# datasets>=2.18

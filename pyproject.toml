@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sqlshift-ai"
-version = "0.2.0"
-description = "Data platform migration intelligence — discovery, lineage, assessment, architecture, validation, and copilot"
+version = "0.3.0"
+description = "SQL Migration Agent — hybrid codegen, behavior RAG, eval suite, dbt emission, ML feature SQL"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
@@ -15,7 +15,8 @@ authors = [
 keywords = [
     "sql", "migration", "vertica", "snowflake", "dbt",
     "data-engineering", "lineage", "data-warehouse", "etl",
-    "huggingface", "llm", "sqlglot"
+    "huggingface", "llm", "sqlglot", "agent", "rag",
+    "machine-learning", "feature-engineering", "evaluation",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -47,6 +48,10 @@ demo = [
     "gradio>=4.44",
     "plotly>=5.18",
     "huggingface_hub>=0.23",
+]
+ml = [
+    "sentence-transformers>=2.2",
+    "datasets>=2.18",
 ]
 dev = [
     "pytest>=8.0",

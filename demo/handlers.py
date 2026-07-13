@@ -494,3 +494,188 @@ def report_to_context(report_data: dict | MigrationReport | None) -> str:
     safe = ctx[:2500].replace("`", "'")
     return f"### Active scan context\n\n{safe}"
 
+
+HERO_EXAMPLE = """SELECT
+    customer_id,
+    ZEROIFNULL(order_amount) AS order_amount,
+    NVL(discount, 0) AS discount
+FROM staging.orders
+WHERE order_date >= CURRENT_DATE - 30"""
+
+FEATURE_SQL_PATH = Path(__file__).parent.parent / "examples" / "ml_features" / "churn_feature_sql.sql"
+
+
+def run_hero_agent(sql: str, source: str, target: str) -> tuple[str, str, str]:
+    """One-shot agent demo: convert + explain + risk summary."""
+    from sqlshift.intelligence.rag import get_rag
+    from sqlshift.risk.scorer import score_object
+
+    sql = sql or HERO_EXAMPLE
+    source_d = Dialect(source)
+    wants_dbt = is_dbt_target(target)
+    target_d = Dialect("snowflake" if wants_dbt else target)
+
+    converted, conf, auto, review = translate_sql(sql, source_d, target_d)
+    obj = MigrationObject(
+        name="hero_query",
+        object_type=ObjectType.SQL_SCRIPT,
+        source_sql=sql,
+        target_sql=converted,
+    )
+    obj = score_object(obj, source_d, target_d)
+
+    output = converted
+    if wants_dbt:
+        files = decompose_to_dbt(obj, source_d, project_name="hero_agent")
+        output = format_dbt_project(files, max_files=12)
+
+    rag = get_rag()
+    hits = rag.retrieve(sql, top_k=3, source=source, target=target if not wants_dbt else "snowflake")
+
+    explain = [
+        f"### SQL Migration Agent · {source} → {target}",
+        "",
+        f"**Confidence:** {conf:.0f}%  ·  **Risk:** {obj.risk_level.value} "
+        f"({obj.complexity_score}/100)  ·  **Category:** "
+        f"{obj.migration_category.value.replace('_', ' ')}",
+        "",
+        "#### What the agent did",
+    ]
+    if auto:
+        explain.extend(f"- {a}" for a in auto[:12])
+    else:
+        explain.append("- Rule transforms + dialect transpilation")
+    if review:
+        explain.append("")
+        explain.append("#### Needs review")
+        explain.extend(f"- {r}" for r in review[:8])
+    if hits:
+        explain.append("")
+        explain.append("#### Retrieved behavior knowledge (RAG)")
+        for h in hits:
+            explain.append(
+                f"- **{h.name}** ({h.severity}): {h.recommendation}"
+            )
+    explain.append("")
+    explain.append(
+        "_Agent stack: hybrid rules + sqlglot + behavior RAG"
+        + (" + dbt decomposer" if wants_dbt else "")
+        + " + optional HF LLM copilot._"
+    )
+    badge = f"{conf:.0f}% conf · {obj.risk_level.value} · {obj.complexity_score}/100"
+    return "\n".join(explain), output, badge
+
+
+def run_eval_suite(limit: int, category: str) -> tuple[str, str, dict]:
+    """Run eval suite and return markdown summary, detail table, metrics dict."""
+    from sqlshift.eval.metrics import run_eval
+    from sqlshift.eval.pairs import ensure_pairs_file
+
+    ensure_pairs_file()
+    cats = None if category in ("all", "", None) else [category]
+    limit_i = int(limit) if limit else 50
+    results, summary = run_eval(limit=limit_i, categories=cats)
+
+    lines = [
+        "### Eval suite results",
+        "",
+        f"| Metric | Score |",
+        f"|--------|-------|",
+        f"| Pairs | {summary['n_pairs']} |",
+        f"| Exact match | {100 * summary['exact_match']:.1f}% |",
+        f"| Token F1 | {100 * summary['token_f1']:.1f}% |",
+        f"| Fuzzy (Dice) | {100 * summary['fuzzy']:.1f}% |",
+        f"| Pass rate | {100 * summary['pass_rate']:.1f}% |",
+        "",
+        "#### By category",
+        "",
+        "| Category | N | Exact | Token F1 | Pass |",
+        "|----------|---|-------|----------|------|",
+    ]
+    for cat, stats in summary.get("by_category", {}).items():
+        lines.append(
+            f"| {cat} | {stats['n']} | {100 * stats['exact_match']:.0f}% "
+            f"| {100 * stats['token_f1']:.0f}% | {100 * stats['pass_rate']:.0f}% |"
+        )
+
+    detail = [
+        "### Sample predictions",
+        "",
+        "| ID | Pass | F1 | Exact |",
+        "|----|------|----|-------|",
+    ]
+    for r in results[:25]:
+        detail.append(
+            f"| {r.pair_id} | {'yes' if r.passed else 'no'} "
+            f"| {100 * r.token_f1:.0f}% | {100 * r.exact_match:.0f}% |"
+        )
+    return "\n".join(lines), "\n".join(detail), summary
+
+
+def submit_eval_score(name: str, summary: dict | None) -> str:
+    from sqlshift.eval.leaderboard import format_leaderboard_md, submit_score
+
+    if not summary or not summary.get("n_pairs"):
+        return format_leaderboard_md() + "\n\n_Run the eval suite before submitting._"
+    board = submit_score(
+        name=name or "anonymous",
+        exact_match=summary.get("exact_match", 0),
+        token_f1=summary.get("token_f1", 0),
+        fuzzy=summary.get("fuzzy", 0),
+        pass_rate=summary.get("pass_rate", 0),
+        n_pairs=summary.get("n_pairs", 0),
+        notes="SQLShiftAI hybrid translator",
+    )
+    return format_leaderboard_md(board)
+
+
+def run_behavior_rag(query: str, source: str, target: str) -> str:
+    from sqlshift.intelligence.rag import get_rag
+
+    return get_rag().answer(query or "NULL empty string timezone", source, target)
+
+
+def run_feature_migration(target: str) -> tuple[str, str]:
+    """Convert ML feature SQL and optionally emit dbt feature mart."""
+    sql = FEATURE_SQL_PATH.read_text(encoding="utf-8") if FEATURE_SQL_PATH.exists() else HERO_EXAMPLE
+    wants_dbt = is_dbt_target(target) or target == "dbt-snowflake"
+    target_d = Dialect.SNOWFLAKE
+    converted, conf, auto, review = translate_sql(sql, Dialect.VERTICA, target_d)
+    obj = MigrationObject(
+        name="churn_features",
+        object_type=ObjectType.SQL_SCRIPT,
+        source_sql=sql,
+        target_sql=converted,
+    )
+    if wants_dbt:
+        files = decompose_to_dbt(obj, Dialect.VERTICA, project_name="ml_feature_mart")
+        out = format_dbt_project(files, max_files=14)
+    else:
+        out = converted
+
+    md = [
+        "### ML / DS feature SQL migration",
+        "",
+        "Legacy Vertica feature engineering SQL → Snowflake"
+        + (" dbt feature mart" if wants_dbt else ""),
+        "",
+        f"**Confidence:** {conf:.0f}%",
+        "",
+        "This path is for **data scientists / ML engineers** migrating training-feature SQL "
+        "into warehouse-native, versioned dbt models.",
+        "",
+        "**Transforms**",
+    ]
+    md.extend(f"- {a}" for a in auto[:10])
+    if review:
+        md.append("")
+        md.append("**Review**")
+        md.extend(f"- {r}" for r in review[:6])
+    return "\n".join(md), out
+
+
+def get_leaderboard_md() -> str:
+    from sqlshift.eval.leaderboard import format_leaderboard_md
+
+    return format_leaderboard_md()
+

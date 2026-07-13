@@ -1,12 +1,12 @@
 # SQLShiftAI
 
-**Data platform migration intelligence** — discover, assess, translate, validate, and plan enterprise warehouse migrations.
+**SQL Migration Agent** — hybrid codegen, behavior RAG, eval suite, dbt emission, and ML feature SQL migration.
 
 [![GitHub](https://img.shields.io/badge/GitHub-dgvj--work%2Fsql__shift__ai-blue)](https://github.com/dgvj-work/sql_shift_ai)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://python.org)
 
-> Upload a legacy data repository and receive a migration runbook, dependency lineage, risk assessment, dbt architecture, validation tests, and an LLM copilot — not merely converted SQL.
+> Not a toy SQL converter. Paste legacy warehouse SQL and get conversion, risk, RAG explanations, optional dbt projects, and an eval harness built for Hugging Face.
 
 ---
 
