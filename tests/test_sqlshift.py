@@ -103,6 +103,42 @@ class TestPipeline:
         assert len(report.validation_results) > 0
 
 
+class TestIntelligence:
+    def test_runbook_generation(self):
+        from sqlshift.pipeline import MigrationPipeline
+        from sqlshift.intelligence.runbook import generate_runbook, generate_executive_summary
+
+        pipeline = MigrationPipeline(source=Dialect.VERTICA, target=Dialect.SNOWFLAKE)
+        report = pipeline.analyze(EXAMPLES)
+        runbook = generate_runbook(report)
+        assert "Migration Runbook" in runbook
+        assert "Phase 1" in runbook
+        summary = generate_executive_summary(report)
+        assert "objects" in summary.lower()
+
+    def test_rationalization(self):
+        from sqlshift.pipeline import MigrationPipeline
+        from sqlshift.intelligence.rationalization import generate_rationalization
+
+        report = MigrationPipeline(source=Dialect.VERTICA, target=Dialect.SNOWFLAKE).analyze(EXAMPLES)
+        rat = generate_rationalization(report)
+        assert "Workload rationalization" in rat
+
+    def test_copilot_context(self):
+        from sqlshift.assistant.copilot import MigrationCopilot
+        from sqlshift.pipeline import MigrationPipeline
+
+        report = MigrationPipeline(source=Dialect.VERTICA, target=Dialect.SNOWFLAKE).analyze(EXAMPLES)
+        ctx = MigrationCopilot().build_context(report)
+        assert "Objects discovered" in ctx
+
+    def test_copilot_fallback(self):
+        from sqlshift.assistant.copilot import MigrationCopilot
+
+        reply = MigrationCopilot()._fallback("explain cutover plan", None, "vertica", "snowflake")
+        assert "phase" in reply.lower() or "cutover" in reply.lower()
+
+
 class TestIncrementalStrategy:
     def test_delete_insert_pattern(self):
         sql = "DELETE FROM t WHERE d = 1; INSERT INTO t SELECT * FROM s"

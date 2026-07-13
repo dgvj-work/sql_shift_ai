@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sqlshift-ai"
-version = "0.1.0"
-description = "AI-powered data platform migration intelligence — discover, translate, validate, and optimize SQL workloads across cloud warehouses"
+version = "0.2.0"
+description = "Data platform migration intelligence — discovery, lineage, assessment, architecture, validation, and copilot"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
@@ -46,6 +46,7 @@ dependencies = [
 demo = [
     "gradio>=4.44",
     "plotly>=5.18",
+    "huggingface_hub>=0.23",
 ]
 dev = [
     "pytest>=8.0",
@@ -58,7 +59,7 @@ sqlshift = "sqlshift.cli:app"
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces/migrationiq/sqlshift-ai"
-Repository = "https://github.com/migrationiq/sqlshift-ai"
+Repository = "https://github.com/dgvj-work/sql_shift_ai"
 Documentation = "https://huggingface.co/spaces/migrationiq/sqlshift-ai"
 "Bug Tracker" = "https://github.com/migrationiq/sqlshift-ai/issues"
 

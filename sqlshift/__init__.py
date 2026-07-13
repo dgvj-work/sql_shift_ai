@@ -1,6 +1,6 @@
 """MigrationIQ / SQLShift AI — Data platform migration intelligence toolkit."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __product_name__ = "MigrationIQ"
 
 from sqlshift.models import (

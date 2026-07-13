@@ -10,3 +10,4 @@ pandas>=2.1
 tabulate>=0.9
 gradio>=4.44
 plotly>=5.18
+huggingface_hub>=0.23
