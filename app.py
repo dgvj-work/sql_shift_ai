@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import inspect
+
 import gradio as gr
 
 from sqlshift import __product_name__, __version__
@@ -30,14 +32,63 @@ from demo.theme import CUSTOM_CSS, build_theme
 SPACE_URL = "https://huggingface.co/spaces/dgvj-work/sqlshift-ai"
 GITHUB_URL = "https://github.com/dgvj-work/sql_shift_ai"
 
-ensure_pairs_file()
-train_and_save()
+# Soft-fail boot so the Space still loads if artifacts are regenerating
+try:
+    ensure_pairs_file()
+except Exception as exc:  # pragma: no cover
+    print(f"[MorphSQL] pairs bootstrap skipped: {exc}")
+try:
+    train_and_save()
+except Exception as exc:  # pragma: no cover
+    print(f"[MorphSQL] risk model bootstrap skipped: {exc}")
 
-_BOOT = convert_for_ui(HERO_EXAMPLE, "snowflake", "pandas")
+try:
+    _BOOT = convert_for_ui(HERO_EXAMPLE, "snowflake", "pandas")
+except Exception as exc:  # pragma: no cover
+    print(f"[MorphSQL] boot convert failed: {exc}")
+    _BOOT = (
+        "Paste SQL and click **Convert**.",
+        "",
+        "Ready",
+        f"[Space]({SPACE_URL})",
+        None,
+        None,
+        "# Convert SQL to get a notebook cell",
+        'from sqlshift.ai import pipeline\nprint(pipeline("sql-migration")("SELECT 1", source="snowflake", target="pandas"))\n',
+    )
+
+
+def _blocks_style_kwargs() -> dict:
+    """Gradio 5 (HF Spaces): theme/css on Blocks. Gradio 6+: those moved to launch()."""
+    params = inspect.signature(gr.Blocks.__init__).parameters
+    kwargs: dict = {}
+    if "theme" in params:
+        kwargs["theme"] = build_theme()
+    if "css" in params:
+        kwargs["css"] = CUSTOM_CSS
+    return kwargs
+
+
+def _launch_style_kwargs() -> dict:
+    """Pass theme/css to launch() when Blocks no longer accepts them (Gradio 6+)."""
+    if "theme" in inspect.signature(gr.Blocks.__init__).parameters:
+        return {}
+    return {"theme": build_theme(), "css": CUSTOM_CSS}
+
+
+def _chatbot(**kwargs):
+    """Chatbot with type='messages' when supported (Gradio 5.x)."""
+    params = inspect.signature(gr.Chatbot.__init__).parameters
+    if "type" in params and "type" not in kwargs:
+        kwargs["type"] = "messages"
+    return gr.Chatbot(**kwargs)
 
 
 def _build_demo() -> gr.Blocks:
-    with gr.Blocks(title=f"{__product_name__} — SQL → pandas") as demo:
+    with gr.Blocks(
+        title=f"{__product_name__} — SQL → pandas / PySpark",
+        **_blocks_style_kwargs(),
+    ) as demo:
         eval_state = gr.State(value={})
         eval_category = gr.State(value="all")
 
@@ -364,7 +415,7 @@ out = pipeline("sql-migration")(sql, source="snowflake", target="pandas")
                         "Ask migration questions. Uses keyword/HF fallback guidance "
                         "(set `HF_TOKEN` for LLM replies)."
                     )
-                    copilot = gr.Chatbot(label="Copilot", height=320)
+                    copilot = _chatbot(label="Copilot", height=320)
                     copilot_msg = gr.Textbox(
                         label="Message",
                         placeholder="e.g. How should I handle ZEROIFNULL on Snowflake?",
@@ -465,4 +516,4 @@ demo = _build_demo()
 
 
 if __name__ == "__main__":
-    demo.launch(theme=build_theme(), css=CUSTOM_CSS)
+    demo.launch(**_launch_style_kwargs())

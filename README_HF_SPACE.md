@@ -9,7 +9,7 @@ python_version: "3.11"
 app_file: app.py
 pinned: true
 license: apache-2.0
-short_description: SQL → pandas / PySpark for AI/ML (also Snowflake, BigQuery, dbt)
+short_description: Upload SQL → pandas / PySpark / Snowflake / BigQuery / dbt + download
 tags:
   - sql
   - pandas
@@ -30,20 +30,37 @@ suggested_hardware: cpu-basic
 
 # MorphSQL
 
-**SQL → pandas / PySpark** for data scientists — plus Snowflake / BigQuery / dbt when you need warehouse output.
+Convert warehouse SQL → **pandas**, **PySpark**, Snowflake, BigQuery, or **dbt** — then **download** the result.
 
-## Try
-1. Open **Convert**
-2. Load a DS example (or paste SQL)
-3. See code + **sample preview** + download `.py`
+## How to use (30 seconds)
+
+1. Open the **Convert** tab
+2. Pick source dialect + **Convert to** target
+3. Load an example, paste SQL, or **upload** a `.sql` / `.zip`
+4. Click **Convert** or **Upload & Convert → Download**
+5. Download the `.py` / `.sql` / `.zip` to your machine
+
+| Target | Download |
+|--------|----------|
+| pandas / PySpark | `.py` ready for notebooks / Databricks |
+| Snowflake / BigQuery | `.sql` |
+| dbt | `.txt` project preview (or zip for batches) |
+
+## Python API
 
 ```python
 from sqlshift.ai import pipeline
-print(pipeline("sql-migration")(
+
+out = pipeline("sql-migration")(
     "SELECT COALESCE(a, 0) FROM t",
     source="snowflake",
-    target="pandas",  # or "pyspark"
-))
+    target="pandas",  # or "pyspark", "snowflake", "bigquery", "dbt-snowflake"
+)
+print(out["converted_sql"][:500])
 ```
 
-Author: Digvijay Waghela · Apache-2.0
+## More tab
+
+Object risk assess · repo workbench · ML feature SQL · copilot · dialect notes · offline eval
+
+Author: Digvijay Waghela · Apache-2.0 · [GitHub](https://github.com/dgvj-work/sql_shift_ai)

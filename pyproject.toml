@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "sqlshift-ai"
 version = "0.4.0"
-description = "MorphSQL: convert warehouse SQL to pandas, Snowflake, BigQuery, or dbt"
+description = "MorphSQL: convert warehouse SQL to pandas, PySpark, Snowflake, BigQuery, or dbt"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"

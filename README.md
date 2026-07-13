@@ -7,7 +7,7 @@ Convert Vertica / Oracle / Redshift / BigQuery / Snowflake SQL to **pandas** or 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://python.org)
 
-Built for data scientists: convert → sample preview → download `.py`.
+Built for data scientists: upload or paste SQL → convert → sample preview → download `.py` / `.sql`.
 
 ```python
 from sqlshift.ai import pipeline
@@ -107,11 +107,25 @@ LLM advisor (Hugging Face Inference API) grounded in your scan context. Ask abou
 ## Hugging Face deployment
 
 ```bash
-huggingface-cli login
-huggingface-cli repo create sql_shift_ai --type space --space_sdk gradio
-bash scripts/deploy_hf.sh dgvj-work/sql_shift_ai
+# one-time
+pip install -U "huggingface_hub[cli]"
+hf auth login
+
+# create the Space once in the UI (Gradio SDK) or:
+#   hf repo create sqlshift-ai --type space --space_sdk gradio --organization dgvj-work
+
+# deploy Space + model + dataset
+./scripts/deploy_hf.sh
+# → https://huggingface.co/spaces/dgvj-work/sqlshift-ai
 ```
 
+Preflight only (no upload):
+
+```bash
+python scripts/check_space.py
+```
+
+The Space card / metadata lives in `README_HF_SPACE.md` (copied to Space `README.md` on deploy).
 Set `HF_TOKEN` in Space secrets (automatic on HF). Optional: `SQLSHIFTAI_MODEL` to change copilot model.
 
 ---

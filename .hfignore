@@ -1,0 +1,17 @@
+# Extra excludes if this repo is used as a git-backed Hugging Face Space
+.venv/
+venv/
+.git/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+migration-output/
+.cursor/
+canvases/
+.env
+.DS_Store
