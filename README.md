@@ -127,9 +127,12 @@ tests/
 
 | Source | Target | Status |
 |--------|--------|--------|
-| Vertica | Snowflake / dbt | Supported |
-| Oracle | Snowflake | Beta |
-| Redshift | Snowflake | Beta |
+| Vertica | Snowflake / dbt-snowflake | Supported |
+| Vertica | BigQuery | Supported |
+| Oracle | Snowflake / dbt-snowflake / BigQuery | Supported |
+| Redshift | Snowflake / dbt-snowflake / BigQuery | Supported |
+| BigQuery | Snowflake / dbt-snowflake | Supported |
+| Snowflake | BigQuery | Supported |
 
 ---
 

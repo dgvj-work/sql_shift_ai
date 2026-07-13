@@ -1,7 +1,9 @@
 """Tests for SQLShiftAI."""
 
-import pytest
+import re
 from pathlib import Path
+
+import pytest
 
 from sqlshift.models import Dialect, MigrationObject, ObjectType
 from sqlshift.scanner.repository import scan_directory
@@ -66,6 +68,94 @@ class TestTranslator:
         sql = "EXECUTE IMMEDIATE 'SELECT 1'"
         _, _, _, review = translate_sql(sql, Dialect.VERTICA, Dialect.SNOWFLAKE)
         assert any("dynamic" in r.lower() for r in review)
+
+    def test_vertica_to_bigquery_zeroifnull_and_dates(self):
+        sql = "SELECT ZEROIFNULL(amount) FROM t WHERE d >= CURRENT_DATE - 7"
+        translated, _, auto, _ = translate_sql(sql, Dialect.VERTICA, Dialect.BIGQUERY)
+        upper = translated.upper()
+        # BigQuery accepts IFNULL or COALESCE (sqlglot may normalize)
+        assert "IFNULL" in upper or "COALESCE" in upper
+        assert "DATE_SUB" in upper or "INTERVAL" in upper
+        assert auto
+
+    def test_oracle_nvl_to_snowflake(self):
+        sql = "SELECT NVL(amount, 0) AS amt FROM dual"
+        translated, _, auto, _ = translate_sql(sql, Dialect.ORACLE, Dialect.SNOWFLAKE)
+        assert "COALESCE" in translated.upper()
+        assert any("NVL" in a for a in auto)
+
+    def test_oracle_to_bigquery(self):
+        sql = "SELECT NVL(amount, 0) FROM orders"
+        translated, conf, _, _ = translate_sql(sql, Dialect.ORACLE, Dialect.BIGQUERY)
+        upper = translated.upper()
+        assert "IFNULL" in upper or "COALESCE" in upper
+        assert conf > 0
+
+    def test_redshift_getdate_to_snowflake(self):
+        sql = "SELECT GETDATE(), NVL(x, 0) FROM t"
+        translated, _, auto, _ = translate_sql(sql, Dialect.REDSHIFT, Dialect.SNOWFLAKE)
+        assert "CURRENT_TIMESTAMP" in translated.upper()
+        assert "COALESCE" in translated.upper()
+        assert auto
+
+    def test_redshift_listagg_to_bigquery(self):
+        sql = "SELECT LISTAGG(name, ',') FROM users"
+        translated, _, auto, _ = translate_sql(sql, Dialect.REDSHIFT, Dialect.BIGQUERY)
+        assert "STRING_AGG" in translated.upper()
+        assert auto
+
+    def test_bigquery_to_snowflake(self):
+        sql = "SELECT IFNULL(amount, 0), STRING_AGG(name, ',') FROM t"
+        translated, _, auto, _ = translate_sql(sql, Dialect.BIGQUERY, Dialect.SNOWFLAKE)
+        assert "COALESCE" in translated.upper()
+        assert "LISTAGG" in translated.upper()
+        assert auto
+
+    def test_snowflake_to_bigquery(self):
+        sql = "SELECT IFF(a IS NULL, 0, a), LISTAGG(name, ',') FROM t"
+        translated, _, auto, _ = translate_sql(sql, Dialect.SNOWFLAKE, Dialect.BIGQUERY)
+        assert re.search(r"\bIF\s*\(", translated, re.I)
+        assert "STRING_AGG" in translated.upper()
+        assert auto
+
+    def test_dbt_snowflake_target_matches_snowflake_sql(self):
+        sql = "SELECT ZEROIFNULL(x) FROM t"
+        snow, _, _, _ = translate_sql(sql, Dialect.VERTICA, Dialect.SNOWFLAKE)
+        dbt, _, _, _ = translate_sql(sql, Dialect.VERTICA, Dialect.DBT_SNOWFLAKE)
+        assert "COALESCE" in snow.upper() and "COALESCE" in dbt.upper()
+
+    def test_procedure_to_bigquery(self):
+        sql = """CREATE OR REPLACE PROCEDURE p(load_date DATE) AS $$
+        BEGIN
+            DELETE FROM t WHERE d = load_date;
+        END; $$;"""
+        translated, _, auto, _ = translate_sql(sql, Dialect.VERTICA, Dialect.BIGQUERY)
+        assert "CREATE OR REPLACE PROCEDURE" in translated.upper()
+        assert "LANGUAGE SQL" not in translated.upper()
+        assert any("BigQuery" in a for a in auto)
+
+    def test_conversion_matrix_produces_output(self):
+        """Every exposed source→target pair must return non-empty converted SQL."""
+        samples = {
+            Dialect.VERTICA: "SELECT ZEROIFNULL(a) AS x FROM staging.t WHERE d >= CURRENT_DATE - 1",
+            Dialect.ORACLE: "SELECT NVL(a, 0) AS x FROM orders WHERE created_at >= SYSDATE",
+            Dialect.REDSHIFT: "SELECT GETDATE() AS ts, NVL(a, 0) AS x FROM t",
+            Dialect.BIGQUERY: "SELECT IFNULL(a, 0) AS x, STRING_AGG(b, ',') FROM t GROUP BY a",
+            Dialect.SNOWFLAKE: "SELECT COALESCE(a, 0) AS x, LISTAGG(b, ',') FROM t GROUP BY a",
+        }
+        targets = [Dialect.SNOWFLAKE, Dialect.DBT_SNOWFLAKE, Dialect.BIGQUERY]
+        for source, sql in samples.items():
+            for target in targets:
+                translated, conf, auto, review = translate_sql(sql, source, target)
+                assert translated.strip(), f"{source.value}→{target.value} returned empty SQL"
+                assert conf >= 0
+                # Same-family routes may only apply light transforms; others must change or note work
+                if source != target and not (
+                    source == Dialect.SNOWFLAKE and target == Dialect.DBT_SNOWFLAKE
+                ):
+                    assert auto or translated != sql or review, (
+                        f"{source.value}→{target.value} produced no conversion signal"
+                    )
 
 
 class TestRiskScorer:

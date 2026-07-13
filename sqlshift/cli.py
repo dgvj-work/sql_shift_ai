@@ -30,6 +30,7 @@ class SourceDialect(str, Enum):
     oracle = "oracle"
     redshift = "redshift"
     bigquery = "bigquery"
+    snowflake = "snowflake"
 
 
 class TargetDialect(str, Enum):

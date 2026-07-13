@@ -14,6 +14,9 @@ from demo.handlers import (
 )
 from demo.theme import CUSTOM_CSS, build_theme
 
+SOURCE_CHOICES = ["vertica", "oracle", "redshift", "bigquery", "snowflake"]
+TARGET_CHOICES = ["snowflake", "dbt-snowflake", "bigquery"]
+
 EXAMPLE_SQL = """CREATE OR REPLACE PROCEDURE SP_BUILD_CUSTOMER_DAILY(load_date DATE)
 AS $$
 BEGIN
@@ -69,12 +72,12 @@ def _build_demo() -> gr.Blocks:
                         )
                     with gr.Column(scale=1, min_width=220):
                         obj_source = gr.Dropdown(
-                            ["vertica", "oracle", "redshift", "bigquery"],
+                            SOURCE_CHOICES,
                             value="vertica",
                             label="Source platform",
                         )
                         obj_target = gr.Dropdown(
-                            ["snowflake", "dbt-snowflake", "bigquery"],
+                            TARGET_CHOICES,
                             value="snowflake",
                             label="Target platform",
                         )
@@ -130,12 +133,12 @@ def _build_demo() -> gr.Blocks:
                     )
                 with gr.Row():
                     wb_source = gr.Dropdown(
-                        ["vertica", "oracle", "redshift", "bigquery"],
+                        SOURCE_CHOICES,
                         value="vertica",
                         label="Source platform",
                     )
                     wb_target = gr.Dropdown(
-                        ["snowflake", "dbt-snowflake", "bigquery"],
+                        TARGET_CHOICES,
                         value="snowflake",
                         label="Target platform",
                     )
@@ -227,12 +230,12 @@ def _build_demo() -> gr.Blocks:
                     )
                     with gr.Row():
                         copilot_source = gr.Dropdown(
-                            ["vertica", "oracle", "redshift"],
+                            SOURCE_CHOICES,
                             value="vertica",
                             label="Source",
                         )
                         copilot_target = gr.Dropdown(
-                            ["snowflake", "dbt-snowflake"],
+                            TARGET_CHOICES,
                             value="snowflake",
                             label="Target",
                         )
@@ -261,6 +264,7 @@ SQLShiftAI is a **data platform migration intelligence system** — not a simple
 | Capability | Description |
 |------------|-------------|
 | Object Inspector | Assess and convert a single SQL object |
+| Multi-dialect conversion | Vertica, Oracle, Redshift, BigQuery, Snowflake → Snowflake / dbt-snowflake / BigQuery |
 | Repository discovery | Scan zip files / sample repos |
 | Dependency lineage | Interactive object dependency graphs |
 | Risk scoring | Complexity, unsupported syntax, impact |

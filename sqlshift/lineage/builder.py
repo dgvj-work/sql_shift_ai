@@ -221,20 +221,23 @@ def _build_column_lineage(
 def _detect_transformations(sql: str, column: str) -> list[str]:
     """Detect transformation patterns involving a column."""
     transformations: list[str] = []
-    col_upper = column.upper()
+    col_escaped = re.escape(column.upper())
 
     patterns = {
-        "aggregation": rf"\b(SUM|COUNT|AVG|MIN|MAX)\s*\([^)]*{col_upper}",
-        "case_logic": rf"\bCASE\b[^E]*{col_upper}",
-        "window_function": rf"{col_upper}[^)]*\bOVER\s*\(",
-        "cast": rf"CAST\s*\(\s*{col_upper}",
-        "coalesce": rf"\b(COALESCE|NVL|IFNULL|ZEROIFNULL)\s*\([^)]*{col_upper}",
-        "date_trunc": rf"\b(DATE_TRUNC|TRUNC)\s*\([^)]*{col_upper}",
+        "aggregation": rf"\b(SUM|COUNT|AVG|MIN|MAX)\s*\([^)]*{col_escaped}",
+        "case_logic": rf"\bCASE\b[\s\S]*?{col_escaped}",
+        "window_function": rf"{col_escaped}[^)]*\bOVER\s*\(",
+        "cast": rf"CAST\s*\(\s*{col_escaped}",
+        "coalesce": rf"\b(COALESCE|NVL|IFNULL|ZEROIFNULL)\s*\([^)]*{col_escaped}",
+        "date_trunc": rf"\b(DATE_TRUNC|TRUNC)\s*\([^)]*{col_escaped}",
     }
 
     sql_upper = sql.upper()
     for name, pattern in patterns.items():
-        if re.search(pattern, sql_upper, re.IGNORECASE):
-            transformations.append(name)
+        try:
+            if re.search(pattern, sql_upper, re.IGNORECASE):
+                transformations.append(name)
+        except re.error:
+            continue
 
     return transformations

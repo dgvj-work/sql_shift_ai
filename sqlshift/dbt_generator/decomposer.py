@@ -76,7 +76,7 @@ def decompose_to_dbt(
     files[f"models/marts/_schema_{base_name}.yml"] = schema
 
     # Migration validation analysis
-    files["analyses/migration_validation.sql"] = _generate_validation_analysis(obj, base_name)
+    files["analyses/migration_validation.sql"] = _generate_validation_analysis(obj, base_name, source)
 
     # Macros for common patterns
     if re.search(r"ZEROIFNULL|NVL|ISNULL", obj.source_sql, re.I):
@@ -169,13 +169,14 @@ def _generate_schema_yml(models: dict[str, str], base_name: str) -> str:
     return yaml.dump(schema, default_flow_style=False)
 
 
-def _generate_validation_analysis(obj: MigrationObject, base_name: str) -> str:
+def _generate_validation_analysis(obj: MigrationObject, base_name: str, source: Dialect) -> str:
+    source_name = source.value.replace("-", "_")
     return f"""-- Migration validation analysis for {obj.name}
 -- Run after dbt build to compare source vs target
 
 -- Row count comparison
 SELECT 'source' AS platform, COUNT(*) AS row_count
-FROM {{{{ source('vertica', '{base_name}') }}}}
+FROM {{{{ source('{source_name}', '{base_name}') }}}}
 UNION ALL
 SELECT 'target' AS platform, COUNT(*) AS row_count
 FROM {{{{ ref('{base_name}') }}}};

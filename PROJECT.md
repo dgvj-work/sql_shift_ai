@@ -106,11 +106,15 @@ pytest tests/ -v
 
 ## Supported migration paths
 
-| Phase | Source | Target | Status |
-|-------|--------|--------|--------|
-| 1 | Vertica | Snowflake / dbt | Full |
-| 2 | Oracle, Redshift | Snowflake | Beta |
-| 3 | Snowflake | BigQuery | Planned |
+| Source | Target | Status |
+|--------|--------|--------|
+| Vertica | Snowflake / dbt-snowflake / BigQuery | Supported |
+| Oracle | Snowflake / dbt-snowflake / BigQuery | Supported |
+| Redshift | Snowflake / dbt-snowflake / BigQuery | Supported |
+| BigQuery | Snowflake / dbt-snowflake | Supported |
+| Snowflake | BigQuery | Supported |
+
+Conversion uses source-gated rules + sqlglot (Vertica parsed as PostgreSQL).
 
 ## Data models (`sqlshift/models.py`)
 

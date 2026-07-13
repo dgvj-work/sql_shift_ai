@@ -16,7 +16,8 @@ from sqlshift.models import Dialect
 logging.getLogger("sqlglot").setLevel(logging.ERROR)
 
 DIALECT_MAP = {
-    Dialect.VERTICA: "vertica",
+    # Vertica is not a sqlglot dialect; PostgreSQL is the closest parser.
+    Dialect.VERTICA: "postgres",
     Dialect.ORACLE: "oracle",
     Dialect.SNOWFLAKE: "snowflake",
     Dialect.BIGQUERY: "bigquery",
@@ -135,19 +136,47 @@ def detect_unsupported_features(sql: str, source: Dialect, target: Dialect) -> l
         "PACKAGE": r"\bCREATE\s+(?:OR\s+REPLACE\s+)?PACKAGE\b",
     }
 
+    redshift_patterns = {
+        "DISTSTYLE": r"\bDISTSTYLE\b",
+        "DISTKEY": r"\bDISTKEY\b",
+        "SORTKEY": r"\bSORTKEY\b",
+        "SUPER type": r"\bSUPER\b",
+        "Spectrum external": r"\bSPECTRUM\b|\bEXTERNAL\s+SCHEMA\b",
+    }
+
+    bigquery_patterns = {
+        "ARRAY/STRUCT": r"\b(ARRAY|STRUCT)\s*<",
+        "QUALIFY": r"\bQUALIFY\b",
+        "SCRIPTING DECLARE": r"\bDECLARE\s+\w+\s+(INT64|STRING|BOOL|FLOAT64)\b",
+        "SAFE. functions": r"\bSAFE\.\w+",
+    }
+
+    snowflake_patterns = {
+        "VARIANT/OBJECT": r"\b(VARIANT|OBJECT|ARRAY)\b",
+        "FLATTEN": r"\bFLATTEN\s*\(",
+        "MATCH_RECOGNIZE": r"\bMATCH_RECOGNIZE\b",
+        "JavaScript procedure": r"\bLANGUAGE\s+JAVASCRIPT\b",
+    }
+
     patterns: dict[str, str] = {}
     if source == Dialect.VERTICA:
         patterns.update(vertica_patterns)
-    if source == Dialect.ORACLE:
+    elif source == Dialect.ORACLE:
         patterns.update(oracle_patterns)
+    elif source == Dialect.REDSHIFT:
+        patterns.update(redshift_patterns)
+    elif source == Dialect.BIGQUERY:
+        patterns.update(bigquery_patterns)
+    elif source == Dialect.SNOWFLAKE:
+        patterns.update(snowflake_patterns)
 
     for feature, pattern in patterns.items():
         if re.search(pattern, sql_upper):
             unsupported.append(feature)
 
-    if target in (Dialect.SNOWFLAKE, Dialect.DBT_SNOWFLAKE):
+    if target in (Dialect.SNOWFLAKE, Dialect.DBT_SNOWFLAKE, Dialect.BIGQUERY):
         if re.search(r"\bEXECUTE\s+IMMEDIATE\b", sql_upper):
-            unsupported.append("Dynamic SQL (requires manual redesign for Snowflake)")
+            unsupported.append("Dynamic SQL (requires manual redesign)")
 
     return unsupported
 
