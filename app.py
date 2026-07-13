@@ -1,4 +1,4 @@
-"""MorphSQL — Hugging Face Space (conversion-first product UI)."""
+"""MorphSQL — Hugging Face Space (conversion-first, DS-friendly)."""
 
 from __future__ import annotations
 
@@ -12,11 +12,11 @@ from demo.handlers import (
     PLAYGROUND_EXAMPLE_LABELS,
     SOURCE_DROPDOWN,
     TARGET_DROPDOWN,
+    convert_for_ui,
     get_leaderboard_md,
     on_example_selected,
     run_behavior_rag,
     run_eval_suite,
-    run_hero_agent,
     submit_eval_score,
 )
 from demo.theme import CUSTOM_CSS, build_theme
@@ -27,21 +27,21 @@ GITHUB_URL = "https://github.com/dgvj-work/sql_shift_ai"
 ensure_pairs_file()
 train_and_save()
 
-_HERO = run_hero_agent(HERO_EXAMPLE, "vertica", "pandas")
+_BOOT = convert_for_ui(HERO_EXAMPLE, "vertica", "pandas")
 
 
 def _build_demo() -> gr.Blocks:
-    with gr.Blocks(title=f"{__product_name__} — SQL converter") as demo:
+    with gr.Blocks(title=f"{__product_name__} — SQL → pandas") as demo:
         eval_state = gr.State(value={})
         eval_category = gr.State(value="all")
 
         gr.HTML(
             f"""
             <div class="header-block">
-                <div class="eyebrow">SQL CONVERTER</div>
+                <div class="eyebrow">FOR DATA SCIENTISTS · SQL → PANDAS</div>
                 <h1>{__product_name__}</h1>
-                <p>Turn warehouse SQL into <strong>pandas</strong> Python, Snowflake SQL,
-                BigQuery SQL, or a dbt project. One convert button. No setup.</p>
+                <p>Paste warehouse SQL, get notebook-ready <strong>pandas</strong> code,
+                optionally preview it on sample data, then download the <code>.py</code> file.</p>
             </div>
             """
         )
@@ -49,17 +49,16 @@ def _build_demo() -> gr.Blocks:
         with gr.Tabs():
             with gr.Tab("Convert"):
                 gr.Markdown(
-                    "### How to use\n"
-                    "1. Pick the **dialect your SQL is written in**.\n"
-                    "2. Pick **what you want out** (pandas is the default).\n"
-                    "3. Paste SQL — or choose an example — then click **Convert**."
+                    "1. Choose input dialect + output type  ·  "
+                    "2. Paste SQL or load an example  ·  "
+                    "3. **Convert** → preview + download"
                 )
 
                 example = gr.Dropdown(
                     choices=PLAYGROUND_EXAMPLE_LABELS,
                     value=PLAYGROUND_EXAMPLE_LABELS[0],
-                    label="Load an example (optional)",
-                    info="This fills the SQL, sets From/To, and converts immediately.",
+                    label="Load a data-science example",
+                    info="Fills SQL, sets From/To, converts, and runs a sample preview.",
                 )
 
                 with gr.Row():
@@ -67,19 +66,17 @@ def _build_demo() -> gr.Blocks:
                         choices=SOURCE_DROPDOWN,
                         value="vertica",
                         label="SQL is written for",
-                        info="Dialect of the query you paste.",
                     )
                     target = gr.Dropdown(
                         choices=TARGET_DROPDOWN,
                         value="pandas",
                         label="Convert to",
-                        info="pandas = Python · others = SQL or dbt files.",
                     )
                     convert_btn = gr.Button("Convert", variant="primary")
 
                 status = gr.Textbox(
                     label="Status",
-                    value=_HERO[2],
+                    value=_BOOT[2],
                     interactive=False,
                     max_lines=1,
                 )
@@ -88,72 +85,119 @@ def _build_demo() -> gr.Blocks:
                     sql_in = gr.Textbox(
                         label="Input SQL",
                         value=HERO_EXAMPLE,
-                        lines=14,
-                        max_lines=28,
-                        placeholder="Paste a SELECT (or a procedure if converting to dbt)…",
+                        lines=12,
+                        max_lines=24,
+                        placeholder="Paste warehouse SQL used in notebooks / ETL…",
                     )
                     sql_out = gr.Textbox(
-                        label="Output",
-                        value=_HERO[1],
-                        lines=14,
-                        max_lines=28,
+                        label="Output code",
+                        value=_BOOT[1],
+                        lines=12,
+                        max_lines=24,
                     )
 
-                notes = gr.Markdown(value=_HERO[0])
-                share = gr.Markdown(value=_HERO[3])
+                with gr.Row():
+                    download = gr.File(
+                        label="Download output (.py / .sql)",
+                        value=_BOOT[5],
+                    )
+                    preview = gr.Dataframe(
+                        label="Sample preview (pandas only)",
+                        value=_BOOT[4],
+                        wrap=True,
+                    )
 
-                example.change(
-                    on_example_selected,
-                    inputs=[example],
-                    outputs=[sql_in, source, target, notes, sql_out, status, share],
-                )
+                notes = gr.Markdown(value=_BOOT[0])
+                with gr.Accordion("Notebook starter cell", open=False):
+                    notebook = gr.Code(
+                        language="python",
+                        value=_BOOT[6],
+                        lines=10,
+                    )
+                share = gr.Markdown(value=_BOOT[3])
+
+                outs = [
+                    sql_in,
+                    source,
+                    target,
+                    notes,
+                    sql_out,
+                    status,
+                    share,
+                    preview,
+                    download,
+                    notebook,
+                ]
+                example.change(on_example_selected, inputs=[example], outputs=outs)
+
+                convert_outs = [
+                    notes,
+                    sql_out,
+                    status,
+                    share,
+                    preview,
+                    download,
+                    notebook,
+                ]
                 convert_btn.click(
-                    run_hero_agent,
+                    convert_for_ui,
                     inputs=[sql_in, source, target],
-                    outputs=[notes, sql_out, status, share],
+                    outputs=convert_outs,
                 )
                 sql_in.submit(
-                    run_hero_agent,
+                    convert_for_ui,
                     inputs=[sql_in, source, target],
-                    outputs=[notes, sql_out, status, share],
+                    outputs=convert_outs,
                 )
 
             with gr.Tab("Guide"):
                 gr.Markdown(
                     f"""
-## When to pick each output
+## Why data scientists use this
+Warehouse SQL (Vertica / Oracle / Redshift / BigQuery / Snowflake) often lives in
+BI tools. MorphSQL turns those queries into **pandas** you can drop into Jupyter,
+Colab, or a feature pipeline — without rewriting null-handling and date filters by hand.
 
-| Convert to | Use when |
+## Recommended workflow
+1. Convert SQL → **Python (pandas)**
+2. Check the **sample preview** (synthetic tables)
+3. Download the `.py` file or paste into a notebook
+4. Replace `tables['…']` with `pd.read_parquet` / `pd.read_sql` / Snowflake connector frames
+
+## Output choices
+| Convert to | Best for |
 |---|---|
-| **Python (pandas)** | You want notebook / script code from warehouse SQL |
-| **Snowflake SQL** | You are moving queries onto Snowflake |
-| **BigQuery SQL** | You are moving queries onto BigQuery |
-| **dbt project** | You want staging / intermediate / marts from SQL or a procedure |
+| **Python (pandas)** | Feature engineering, EDA, notebook migration |
+| **Snowflake / BigQuery SQL** | Keeping work in the warehouse |
+| **dbt project** | Productionizing SQL into models |
 
-## Supported input dialects
-Vertica · Oracle · Redshift · BigQuery · Snowflake
-
-## What this product is
-- A **deterministic** SQL rewriter (rules + sqlglot) with pandas codegen
-- Not a hosted chatbot — conversion does not call an external LLM
-- Complex procedures / cursors / dynamic SQL may need manual follow-up
-
-## Python API
+## Notebook pattern
 ```python
+import pandas as pd
 from sqlshift.ai import pipeline
-print(pipeline("sql-migration")(
-    "SELECT ZEROIFNULL(a) FROM t",
+
+out = pipeline("sql-migration")(
+    open("legacy.sql").read(),
     source="vertica",
     target="pandas",
-))
+)
+# out["converted_sql"] is Python source — exec or save as .py
 ```
 
-[Open on Hugging Face]({SPACE_URL}) · [GitHub]({GITHUB_URL})
+Or load warehouse extracts directly:
+```python
+tables = {{
+    "staging.orders": pd.read_parquet("orders.parquet"),
+}}
+# then run the MorphSQL-generated script so `result` is your frame
+```
+
+[Space]({SPACE_URL}) · [GitHub]({GITHUB_URL})
 """
                 )
 
             with gr.Tab("More"):
-                gr.Markdown("Power-user extras. Everyday use only needs **Convert**.")
+                gr.Markdown("Optional extras. Day-to-day use is the **Convert** tab.")
 
                 with gr.Accordion("Dialect behavior notes", open=False):
                     rag_q = gr.Textbox(

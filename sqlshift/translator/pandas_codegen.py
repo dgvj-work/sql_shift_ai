@@ -325,16 +325,31 @@ class _PandasConverter:
                 alias = e.alias_or_name
                 inner = e.this if isinstance(e, exp.Alias) else e
                 if isinstance(inner, exp.AggFunc):
-                    col, func = self._agg(inner, df_var)
-                    out_name = alias or f"{func}_{col}"
-                    rename_map[out_name] = (col, func)
+                    out_name = alias or f"agg_{len(rename_map)}"
+                    # Materialize non-column aggregate inputs as helper columns
+                    arg = inner.this
+                    if isinstance(inner, exp.Count) and (
+                        arg is None or isinstance(arg, exp.Star)
+                    ):
+                        rename_map[out_name] = (group_cols[0] if group_cols else "__all__", "size")
+                    elif isinstance(arg, exp.Column):
+                        col, func = self._agg(inner, df_var)
+                        rename_map[out_name] = (col, func)
+                    else:
+                        helper = f"__agg_{_ident(out_name)}"
+                        expr_code = self._value_expr(arg, df_var) if arg is not None else "pd.NA"
+                        lines.append(f"{df_var}[{helper!r}] = {expr_code}")
+                        _, func = self._agg(inner, df_var)
+                        if func == "size":
+                            func = "count"
+                        rename_map[out_name] = (helper, func)
+                        self.auto.append(f"Aggregate expression → helper column {helper}")
                 else:
                     name = alias or self._column_name(inner)
                     if name not in group_cols:
                         group_cols.append(name)
 
             if group_cols and rename_map:
-                # COUNT(*) / size → use size on any column via named agg workaround
                 named_parts = []
                 for out, (col, func) in rename_map.items():
                     if func == "size":

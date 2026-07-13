@@ -9,11 +9,12 @@ python_version: "3.11"
 app_file: app.py
 pinned: true
 license: apache-2.0
-short_description: Convert Vertica/Oracle/Redshift SQL to pandas, Snowflake, BigQuery, or dbt
+short_description: SQL → pandas for data scientists (also Snowflake, BigQuery, dbt)
 tags:
   - sql
   - pandas
   - code
+  - data-science
   - snowflake
   - dbt
   - data-engineering
@@ -26,14 +27,12 @@ suggested_hardware: cpu-basic
 
 # MorphSQL
 
-Convert warehouse SQL into **pandas**, **Snowflake**, **BigQuery**, or a **dbt** project.
+**SQL → pandas** for data scientists — plus Snowflake / BigQuery / dbt when you need warehouse output.
 
-## Use it
-1. Open the **Convert** tab
-2. Choose input dialect + output type
-3. Paste SQL (or load an example) → **Convert**
-
-Default output is **Python (pandas)**.
+## Try
+1. Open **Convert**
+2. Load a DS example (or paste SQL)
+3. See code + **sample preview** + download `.py`
 
 ```python
 from sqlshift.ai import pipeline

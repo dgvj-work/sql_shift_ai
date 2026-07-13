@@ -276,6 +276,24 @@ class TestTranslator:
         assert "%" in badge
         assert "pandas" in md.lower() or "PANDAS" in md.upper() or "Python" in md
 
+    def test_sample_preview_and_convert_for_ui(self):
+        import pandas as pd
+        from demo.handlers import convert_for_ui, run_sample_preview
+
+        notes, output, status, share, preview, path, nb = convert_for_ui(
+            "SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount "
+            "FROM staging.orders WHERE order_date >= CURRENT_DATE - 7",
+            "vertica",
+            "pandas",
+        )
+        assert "import pandas" in output
+        assert path.endswith(".py")
+        assert "notebook" in nb.lower() or "MorphSQL" in nb
+        assert preview is None or isinstance(preview, pd.DataFrame)
+        df, note = run_sample_preview(output, "pandas", sql="SELECT a FROM staging.orders")
+        assert isinstance(df, pd.DataFrame)
+        assert "preview" in note.lower() or "Sample" in note
+
     def test_is_pandas_target(self):
         from sqlshift.translator.pandas_codegen import is_pandas_target
 

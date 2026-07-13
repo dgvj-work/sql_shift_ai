@@ -569,9 +569,10 @@ def run_hero_agent(sql: str, source: str, target: str) -> tuple[str, str, str, s
     if wants_pandas:
         kind = "Python (pandas)"
         next_steps = [
-            "1. Copy the generated Python on the right.",
-            "2. Assign your DataFrames to `tables['table_name']`.",
-            "3. Run the script — use the `result` DataFrame.",
+            "1. Review the generated Python on the right.",
+            "2. Check the **sample preview** (synthetic tables).",
+            "3. Download the `.py` file or open the notebook starter cell.",
+            "4. Point `tables['…']` at your real DataFrames (`read_parquet` / `read_sql`).",
         ]
     elif wants_dbt:
         kind = "dbt project"
@@ -636,19 +637,213 @@ def run_hero_agent(sql: str, source: str, target: str) -> tuple[str, str, str, s
     return "\n".join(notes), output, status, share
 
 
+def _infer_columns_from_sql(sql: str) -> list[str]:
+    cols: list[str] = []
+    # AS aliases
+    cols.extend(re.findall(r"\bAS\s+([A-Za-z_][\w]*)", sql or "", flags=re.I))
+    # bare identifiers after SELECT / commas (best-effort)
+    cols.extend(re.findall(r"(?:SELECT|,)\s*(?:[\w.]+\.)?([A-Za-z_][\w]*)\b", sql or "", flags=re.I))
+    # common warehouse columns used in demos
+    cols.extend(
+        [
+            "customer_id",
+            "user_id",
+            "order_amount",
+            "discount",
+            "order_date",
+            "amount",
+            "name",
+            "id",
+            "a",
+            "b",
+            "x",
+            "dt",
+            "dept",
+            "event_value",
+            "event_ts",
+            "event_type",
+            "value",
+            "score",
+        ]
+    )
+    # de-dupe preserving order, drop SQL keywords
+    skip = {
+        "select",
+        "from",
+        "where",
+        "group",
+        "by",
+        "order",
+        "limit",
+        "as",
+        "and",
+        "or",
+        "on",
+        "join",
+        "left",
+        "right",
+        "inner",
+        "outer",
+        "case",
+        "when",
+        "then",
+        "else",
+        "end",
+        "null",
+        "not",
+        "is",
+        "in",
+        "distinct",
+        "count",
+        "sum",
+        "avg",
+        "min",
+        "max",
+        "coalesce",
+        "nvl",
+        "zeroifnull",
+        "ifnull",
+        "current_date",
+        "sysdate",
+        "getdate",
+    }
+    out: list[str] = []
+    for c in cols:
+        if c.lower() in skip:
+            continue
+        if c not in out:
+            out.append(c)
+    return out[:24]
+
+
+def build_sample_tables(code: str, sql: str = "") -> dict:
+    """Build tiny demo DataFrames so generated pandas can execute in the Space."""
+    import pandas as pd
+
+    keys = list(dict.fromkeys(re.findall(r"tables\[['\"]([^'\"]+)['\"]\]", code or "")))
+    cols = _infer_columns_from_sql(sql)
+    if not cols:
+        cols = ["id", "value"]
+
+    n = 5
+    today = pd.Timestamp.today().normalize()
+    frames: dict = {}
+    for key in keys:
+        data: dict = {}
+        for i, col in enumerate(cols):
+            cl = col.lower()
+            if any(t in cl for t in ("date", "ts", "time", "dt")):
+                data[col] = [today - pd.Timedelta(days=j) for j in range(n)]
+            elif any(t in cl for t in ("id", "count", "nunique", "flag", "label")):
+                data[col] = list(range(1, n + 1))
+            elif any(t in cl for t in ("amount", "value", "score", "avg", "sum", "discount")):
+                data[col] = [None if j == 0 else float(10 * (j + 1)) for j in range(n)]
+            elif any(t in cl for t in ("name", "type", "dept")):
+                data[col] = [f"item_{j}" for j in range(n)]
+            else:
+                data[col] = [j + 1 for j in range(n)]
+        frames[key] = pd.DataFrame(data)
+    return frames
+
+
+def run_sample_preview(output: str, target: str, sql: str = "") -> tuple:
+    """
+    Execute generated pandas against synthetic tables.
+    Returns (dataframe_or_none, note_md).
+    """
+    import pandas as pd
+
+    if not is_pandas_target(target):
+        return None, "_Live preview is available when output is **Python (pandas)**._"
+
+    code = output or ""
+    if "import pandas" not in code:
+        return None, "_No pandas code to preview._"
+
+    tables = build_sample_tables(code, sql)
+    if not tables and "tables[" in code:
+        return None, "_Could not infer input tables for a live preview._"
+    if not tables:
+        # scalar / dual-style scripts
+        tables = {}
+
+    ns: dict = {"pd": pd, "np": __import__("numpy"), "tables": tables}
+    try:
+        exec(code, ns, ns)  # noqa: S102 — intentional demo sandbox for generated code
+    except Exception as exc:
+        return None, f"_Preview could not run automatically:_ `{exc}`"
+
+    result = ns.get("result")
+    if not isinstance(result, pd.DataFrame):
+        return None, "_Preview ran, but no `result` DataFrame was produced._"
+
+    note = (
+        f"**Sample preview** · ran generated code on {len(tables)} synthetic table(s) "
+        f"→ `{result.shape[0]}` rows × `{result.shape[1]}` cols. "
+        "Replace `tables[...]` with your real DataFrames in a notebook."
+    )
+    # Cap display size for Gradio
+    return result.head(20), note
+
+
+def write_output_download(output: str, target: str) -> str:
+    """Write converted output to a downloadable temp file; return path."""
+    suffix = ".py" if is_pandas_target(target) else ".sql" if not is_dbt_target(target) else ".txt"
+    prefix = "morphsql_pandas_" if is_pandas_target(target) else "morphsql_output_"
+    path = Path(tempfile.gettempdir()) / f"{prefix}{abs(hash(output)) % 10_000_000}{suffix}"
+    path.write_text(output or "", encoding="utf-8")
+    return str(path)
+
+
+def notebook_cell(output: str, target: str) -> str:
+    """Short copy-paste cell for Jupyter / Colab."""
+    if not is_pandas_target(target):
+        return (
+            "# Output is SQL/dbt — paste into your warehouse client or dbt project.\n"
+            "# Tip: switch Convert to → Python (pandas) for a notebook cell."
+        )
+    return (
+        "# MorphSQL → pandas (paste into a notebook cell)\n"
+        "import pandas as pd\n"
+        "import numpy as np\n\n"
+        "# 1) Load your real data\n"
+        "# tables = {\n"
+        "#     'staging.orders': pd.read_parquet('orders.parquet'),\n"
+        "# }\n\n"
+        "# 2) Paste the generated MorphSQL code below (or %run the downloaded .py)\n"
+        "# 3) Use `result` as your feature / analysis DataFrame\n"
+    )
+
+
+def convert_for_ui(sql: str, source: str, target: str):
+    """Full Convert-tab payload for the Space UI."""
+    notes, output, status, share = run_hero_agent(sql, source, target)
+    preview, preview_note = run_sample_preview(output, target, sql=sql or "")
+    download = write_output_download(output, target)
+    nb = notebook_cell(output, target)
+    if preview_note:
+        notes = notes + "\n" + preview_note + "\n"
+    return notes, output, status, share, preview, download, nb
+
+
 PLAYGROUND_EXAMPLE_LABELS = [
-    "Example: Vertica SQL → pandas",
-    "Example: Oracle SQL → pandas",
-    "Example: Redshift SQL → pandas",
-    "Example: BigQuery SQL → pandas",
-    "Example: Snowflake SQL → pandas",
-    "Example: Vertica SQL → Snowflake",
-    "Example: Vertica procedure → dbt",
+    "DS: Vertica orders → pandas (fillna / filters)",
+    "DS: Feature aggregates → pandas (groupby)",
+    "DS: Oracle dual constants → pandas",
+    "DS: Redshift window slice → pandas",
+    "DS: BigQuery null handling → pandas",
+    "Warehouse: Vertica → Snowflake SQL",
+    "Warehouse: Vertica procedure → dbt",
 ]
 
 PLAYGROUND_EXAMPLES = [
     [
         "SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount, NVL(discount, 0) AS discount FROM staging.orders WHERE order_date >= CURRENT_DATE - 30",
+        "vertica",
+        "pandas",
+    ],
+    [
+        "SELECT user_id, COUNT(*) AS event_count_90d, SUM(ZEROIFNULL(event_value)) AS value_sum_90d, AVG(ZEROIFNULL(event_value)) AS value_avg_90d FROM staging.product_events WHERE event_ts >= CURRENT_DATE - 90 GROUP BY user_id",
         "vertica",
         "pandas",
     ],
@@ -665,11 +860,6 @@ PLAYGROUND_EXAMPLES = [
     [
         "SELECT IFNULL(a, 0) AS a, b FROM t WHERE a IS NOT NULL",
         "bigquery",
-        "pandas",
-    ],
-    [
-        "SELECT COALESCE(x, 0) AS x, dept FROM analytics.facts WHERE dt >= CURRENT_DATE",
-        "snowflake",
         "pandas",
     ],
     [
@@ -693,17 +883,19 @@ def load_playground_example(index: int) -> tuple[str, str, str]:
 
 
 def load_and_convert_example(index: int) -> tuple[str, str, str, str, str, str, str]:
-    """Load a preset and immediately convert."""
+    """Load a preset and immediately convert (legacy 7-tuple)."""
     sql, source, target = load_playground_example(index)
     explain, output, badge, share = run_hero_agent(sql, source, target)
     return sql, source, target, explain, output, badge, share
 
 
-def on_example_selected(label: str | None) -> tuple[str, str, str, str, str, str, str]:
-    """Dropdown helper: pick an example by its visible label."""
+def on_example_selected(label: str | None):
+    """Dropdown helper used by the Convert tab (extended UI payload)."""
     if not label or label not in PLAYGROUND_EXAMPLE_LABELS:
         label = PLAYGROUND_EXAMPLE_LABELS[0]
-    return load_and_convert_example(PLAYGROUND_EXAMPLE_LABELS.index(label))
+    sql, source, target = load_playground_example(PLAYGROUND_EXAMPLE_LABELS.index(label))
+    notes, output, status, share, preview, download, nb = convert_for_ui(sql, source, target)
+    return sql, source, target, notes, output, status, share, preview, download, nb
 
 
 AGENT_PROMPTS = [
@@ -714,9 +906,9 @@ AGENT_PROMPTS = [
         "pandas",
     ),
     (
-        "Convert Oracle SQL to pandas",
+        "Convert feature SQL to pandas",
         PLAYGROUND_EXAMPLES[1][0],
-        "oracle",
+        "vertica",
         "pandas",
     ),
     (
