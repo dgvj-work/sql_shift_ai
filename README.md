@@ -16,7 +16,7 @@ Built for data scientists: upload or paste SQL → convert → sample preview �
 | **Product** | **MorphSQL** |
 | Python import / CLI / PyPI | `morphsql` |
 | Hugging Face Space / model | `dgvj-work/morphsql` |
-| GitHub | `dgvj-work/morphsql` (rename from `sql_shift_ai` if still pending) |
+| GitHub | `dgvj-work/morphsql` |
 
 ```python
 from morphsql.ai import pipeline
@@ -128,9 +128,7 @@ hf auth login
 # → https://huggingface.co/spaces/dgvj-work/morphsql
 ```
 
-**One-time Hub setup (if not done yet)**
-1. GitHub: Settings → General → Repository name → rename `sql_shift_ai` → `morphsql`
-2. Hugging Face: create Gradio Space + model repos named `morphsql` under `dgvj-work`, then run `./scripts/deploy_hf.sh`
+**Hugging Face Space (one-time)** — create Gradio Space + model `dgvj-work/morphsql`, then run `./scripts/deploy_hf.sh`.
 
 Preflight only (no upload):
 
