@@ -806,12 +806,31 @@ def notebook_cell(output: str, target: str) -> str:
         "# MorphSQL → pandas (paste into a notebook cell)\n"
         "import pandas as pd\n"
         "import numpy as np\n\n"
-        "# 1) Load your real data\n"
+        "# 1) Load your real data (parquet / sql / HF datasets)\n"
         "# tables = {\n"
         "#     'staging.orders': pd.read_parquet('orders.parquet'),\n"
         "# }\n\n"
         "# 2) Paste the generated MorphSQL code below (or %run the downloaded .py)\n"
-        "# 3) Use `result` as your feature / analysis DataFrame\n"
+        "# 3) Use `result` as features for sklearn / XGBoost / embeddings pipelines\n"
+    )
+
+
+def hf_pipeline_snippet(sql: str, source: str, target: str) -> str:
+    """Hugging Face-style API snippet for AI / ML users."""
+    sql_short = (sql or "").strip().replace("\\", "\\\\").replace('"""', "'''")
+    if len(sql_short) > 180:
+        sql_short = sql_short[:177] + "..."
+    return (
+        "from sqlshift.ai import pipeline\n\n"
+        "# Same API style as transformers.pipeline\n"
+        'pipe = pipeline("sql-migration")\n'
+        "out = pipe(\n"
+        f'    """{sql_short}""",\n'
+        f'    source="{source}",\n'
+        f'    target="{target}",\n'
+        ")\n"
+        'print(out["converted_sql"][:500])  # pandas code or SQL\n'
+        'print(out.get("risk"))             # optional risk head\n'
     )
 
 
@@ -821,14 +840,15 @@ def convert_for_ui(sql: str, source: str, target: str):
     preview, preview_note = run_sample_preview(output, target, sql=sql or "")
     download = write_output_download(output, target)
     nb = notebook_cell(output, target)
+    api = hf_pipeline_snippet(sql or HERO_EXAMPLE, source, target)
     if preview_note:
         notes = notes + "\n" + preview_note + "\n"
-    return notes, output, status, share, preview, download, nb
+    return notes, output, status, share, preview, download, nb, api
 
 
 PLAYGROUND_EXAMPLE_LABELS = [
     "DS: Vertica orders → pandas (fillna / filters)",
-    "DS: Feature aggregates → pandas (groupby)",
+    "AI: Feature aggregates → pandas (training features)",
     "DS: Oracle dual constants → pandas",
     "DS: Redshift window slice → pandas",
     "DS: BigQuery null handling → pandas",
@@ -894,8 +914,10 @@ def on_example_selected(label: str | None):
     if not label or label not in PLAYGROUND_EXAMPLE_LABELS:
         label = PLAYGROUND_EXAMPLE_LABELS[0]
     sql, source, target = load_playground_example(PLAYGROUND_EXAMPLE_LABELS.index(label))
-    notes, output, status, share, preview, download, nb = convert_for_ui(sql, source, target)
-    return sql, source, target, notes, output, status, share, preview, download, nb
+    notes, output, status, share, preview, download, nb, api = convert_for_ui(
+        sql, source, target
+    )
+    return sql, source, target, notes, output, status, share, preview, download, nb, api
 
 
 AGENT_PROMPTS = [

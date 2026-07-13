@@ -38,10 +38,10 @@ def _build_demo() -> gr.Blocks:
         gr.HTML(
             f"""
             <div class="header-block">
-                <div class="eyebrow">FOR DATA SCIENTISTS · SQL → PANDAS</div>
+                <div class="eyebrow">AI / ML · DATA SCIENCE · SQL → PANDAS</div>
                 <h1>{__product_name__}</h1>
-                <p>Paste warehouse SQL, get notebook-ready <strong>pandas</strong> code,
-                optionally preview it on sample data, then download the <code>.py</code> file.</p>
+                <p>Turn warehouse SQL into notebook-ready <strong>pandas</strong> features for
+                training, EDA, or HF pipelines — with live preview and a downloadable <code>.py</code>.</p>
             </div>
             """
         )
@@ -49,16 +49,16 @@ def _build_demo() -> gr.Blocks:
         with gr.Tabs():
             with gr.Tab("Convert"):
                 gr.Markdown(
-                    "1. Choose input dialect + output type  ·  "
+                    "1. Choose input dialect + output  ·  "
                     "2. Paste SQL or load an example  ·  "
-                    "3. **Convert** → preview + download"
+                    "3. **Convert** → preview + download + HF API snippet"
                 )
 
                 example = gr.Dropdown(
                     choices=PLAYGROUND_EXAMPLE_LABELS,
                     value=PLAYGROUND_EXAMPLE_LABELS[0],
-                    label="Load a data-science example",
-                    info="Fills SQL, sets From/To, converts, and runs a sample preview.",
+                    label="Load a data-science / AI example",
+                    info="Fills SQL, converts, runs sample preview.",
                 )
 
                 with gr.Row():
@@ -87,7 +87,7 @@ def _build_demo() -> gr.Blocks:
                         value=HERO_EXAMPLE,
                         lines=12,
                         max_lines=24,
-                        placeholder="Paste warehouse SQL used in notebooks / ETL…",
+                        placeholder="Paste warehouse SQL used in notebooks / feature pipelines…",
                     )
                     sql_out = gr.Textbox(
                         label="Output code",
@@ -100,11 +100,13 @@ def _build_demo() -> gr.Blocks:
                     download = gr.File(
                         label="Download output (.py / .sql)",
                         value=_BOOT[5],
+                        elem_classes=["download-box"],
                     )
                     preview = gr.Dataframe(
                         label="Sample preview (pandas only)",
                         value=_BOOT[4],
                         wrap=True,
+                        elem_classes=["preview-table"],
                     )
 
                 notes = gr.Markdown(value=_BOOT[0])
@@ -113,6 +115,15 @@ def _build_demo() -> gr.Blocks:
                         language="python",
                         value=_BOOT[6],
                         lines=10,
+                    )
+                with gr.Accordion("Hugging Face pipeline API (AI / ML)", open=True):
+                    gr.Markdown(
+                        "Same style as `transformers.pipeline` — use in Colab, HF Jobs, or training scripts."
+                    )
+                    api_code = gr.Code(
+                        language="python",
+                        value=_BOOT[7],
+                        lines=12,
                     )
                 share = gr.Markdown(value=_BOOT[3])
 
@@ -127,6 +138,7 @@ def _build_demo() -> gr.Blocks:
                     preview,
                     download,
                     notebook,
+                    api_code,
                 ]
                 example.change(on_example_selected, inputs=[example], outputs=outs)
 
@@ -138,6 +150,7 @@ def _build_demo() -> gr.Blocks:
                     preview,
                     download,
                     notebook,
+                    api_code,
                 ]
                 convert_btn.click(
                     convert_for_ui,
@@ -153,43 +166,36 @@ def _build_demo() -> gr.Blocks:
             with gr.Tab("Guide"):
                 gr.Markdown(
                     f"""
+## For AI / ML practitioners
+MorphSQL is a **deterministic** SQL→pandas codegen tool (not a chat LLM). Use it when you have
+warehouse SQL for labels/features and want a Python frame for training or evaluation.
+
+**Typical path**
+1. Convert feature SQL → pandas
+2. Point `tables[...]` at parquet / `datasets` / warehouse extracts
+3. Feed `result` into sklearn, XGBoost, or a Transformers training loop
+
 ## Why data scientists use this
-Warehouse SQL (Vertica / Oracle / Redshift / BigQuery / Snowflake) often lives in
-BI tools. MorphSQL turns those queries into **pandas** you can drop into Jupyter,
-Colab, or a feature pipeline — without rewriting null-handling and date filters by hand.
+Warehouse SQL often lives in BI tools. MorphSQL rewrites dialect quirks (NVL, ZEROIFNULL, dates)
+into pandas you can run in Jupyter / Colab.
 
 ## Recommended workflow
 1. Convert SQL → **Python (pandas)**
-2. Check the **sample preview** (synthetic tables)
-3. Download the `.py` file or paste into a notebook
-4. Replace `tables['…']` with `pd.read_parquet` / `pd.read_sql` / Snowflake connector frames
+2. Check the **sample preview**
+3. Download `.py` or copy the **HF pipeline** snippet
+4. Replace synthetic tables with real data
 
 ## Output choices
 | Convert to | Best for |
 |---|---|
-| **Python (pandas)** | Feature engineering, EDA, notebook migration |
-| **Snowflake / BigQuery SQL** | Keeping work in the warehouse |
+| **Python (pandas)** | Feature engineering, EDA, model training prep |
+| **Snowflake / BigQuery SQL** | Keeping transforms in the warehouse |
 | **dbt project** | Productionizing SQL into models |
 
-## Notebook pattern
 ```python
-import pandas as pd
 from sqlshift.ai import pipeline
-
-out = pipeline("sql-migration")(
-    open("legacy.sql").read(),
-    source="vertica",
-    target="pandas",
-)
-# out["converted_sql"] is Python source — exec or save as .py
-```
-
-Or load warehouse extracts directly:
-```python
-tables = {{
-    "staging.orders": pd.read_parquet("orders.parquet"),
-}}
-# then run the MorphSQL-generated script so `result` is your frame
+out = pipeline("sql-migration")(sql, source="vertica", target="pandas")
+# out["converted_sql"] → exec / save as features.py
 ```
 
 [Space]({SPACE_URL}) · [GitHub]({GITHUB_URL})

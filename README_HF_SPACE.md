@@ -9,12 +9,14 @@ python_version: "3.11"
 app_file: app.py
 pinned: true
 license: apache-2.0
-short_description: SQL → pandas for data scientists (also Snowflake, BigQuery, dbt)
+short_description: SQL → pandas features for AI/ML (also Snowflake, BigQuery, dbt)
 tags:
   - sql
   - pandas
   - code
   - data-science
+  - machine-learning
+  - feature-extraction
   - snowflake
   - dbt
   - data-engineering

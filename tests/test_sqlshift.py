@@ -280,7 +280,7 @@ class TestTranslator:
         import pandas as pd
         from demo.handlers import convert_for_ui, run_sample_preview
 
-        notes, output, status, share, preview, path, nb = convert_for_ui(
+        notes, output, status, share, preview, path, nb, api = convert_for_ui(
             "SELECT customer_id, ZEROIFNULL(order_amount) AS order_amount "
             "FROM staging.orders WHERE order_date >= CURRENT_DATE - 7",
             "vertica",
@@ -289,6 +289,7 @@ class TestTranslator:
         assert "import pandas" in output
         assert path.endswith(".py")
         assert "notebook" in nb.lower() or "MorphSQL" in nb
+        assert "pipeline" in api
         assert preview is None or isinstance(preview, pd.DataFrame)
         df, note = run_sample_preview(output, "pandas", sql="SELECT a FROM staging.orders")
         assert isinstance(df, pd.DataFrame)
