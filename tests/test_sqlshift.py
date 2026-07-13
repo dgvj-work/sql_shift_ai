@@ -1,4 +1,4 @@
-"""Tests for MigrationIQ / SQLShift AI."""
+"""Tests for MigrationIQ."""
 
 import pytest
 from pathlib import Path
@@ -42,11 +42,25 @@ class TestParser:
 
 
 class TestTranslator:
-    def test_translate_vertica_to_snowflake(self):
+    def test_zeroifnull_maps_to_coalesce_with_default(self):
         sql = "SELECT ZEROIFNULL(amount) FROM staging.transactions"
-        translated, confidence, auto, review = translate_sql(sql, Dialect.VERTICA, Dialect.SNOWFLAKE)
-        assert "COALESCE" in translated.upper() or "ZEROIFNULL" not in translated.upper()
+        translated, confidence, _, _ = translate_sql(sql, Dialect.VERTICA, Dialect.SNOWFLAKE)
+        assert "COALESCE(amount," in translated.replace(" ", "") and ",0)" in translated.replace(" ", "")
         assert confidence > 0
+
+    def test_procedure_parameter_binding(self):
+        sql = """CREATE OR REPLACE PROCEDURE p(load_date DATE) AS $$
+        BEGIN
+            DELETE FROM t WHERE d = load_date;
+        END; $$;"""
+        translated, _, _, _ = translate_sql(sql, Dialect.VERTICA, Dialect.SNOWFLAKE)
+        assert ":LOAD_DATE" in translated
+        assert "WHERE d = :LOAD_DATE" in translated
+
+    def test_date_arithmetic_uses_dateadd(self):
+        sql = "SELECT * FROM t WHERE order_date >= CURRENT_DATE - 365"
+        translated, _, _, _ = translate_sql(sql, Dialect.VERTICA, Dialect.SNOWFLAKE)
+        assert "DATEADD" in translated.upper()
 
     def test_detects_dynamic_sql_review(self):
         sql = "EXECUTE IMMEDIATE 'SELECT 1'"

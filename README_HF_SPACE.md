@@ -1,14 +1,14 @@
 ---
-title: MigrationIQ SQLShift AI
-emoji: 🔄
-colorFrom: blue
-colorTo: cyan
+title: MigrationIQ
+emoji: 📊
+colorFrom: gray
+colorTo: blue
 sdk: gradio
 sdk_version: "4.44.0"
 app_file: app.py
 pinned: true
 license: apache-2.0
-short_description: AI data platform migration intelligence — Vertica to Snowflake
+short_description: Data platform migration toolkit — Vertica to Snowflake
 tags:
   - sql
   - migration
@@ -19,9 +19,8 @@ tags:
   - lineage
   - etl
   - code-generation
-  - agent
 ---
 
-# MigrationIQ — AI Data Platform Migration Copilot
+# MigrationIQ
 
-Open-source migration intelligence for enterprise data warehouse modernization.
+Data platform migration toolkit for enterprise warehouse modernization.

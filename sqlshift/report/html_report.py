@@ -47,7 +47,7 @@ REPORT_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="container">
-  <h1>🔄 MigrationIQ Migration Report</h1>
+  <h1>MigrationIQ Migration Report</h1>
   <p class="subtitle">{{ report.source_dialect.value | upper }} → {{ report.target_dialect.value | upper }} | {{ report.repository_path }} | Generated {{ timestamp }}</p>
 
   <div class="metrics">
